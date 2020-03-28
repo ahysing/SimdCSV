@@ -1,3 +1,3 @@
 # SimdCSV
 
-A description of this package.
+A port of simdcsv for swift
