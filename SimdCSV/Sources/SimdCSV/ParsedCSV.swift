@@ -8,6 +8,12 @@
 import Foundation
 
 internal struct ParseCSV {
-    var n_indexes :UInt32
-    var indexes :UnsafePointer<UInt32>
+    var indexes :UnsafeMutablePointer<Int32>
+    init(count:size_t = 0) {
+        if count != 0 {
+            indexes = UnsafeMutablePointer<Int32>.allocate(capacity: count)
+        } else {
+            indexes = UnsafeMutablePointer<Int32>.allocate(capacity: 32)
+        }
+    }
 }
