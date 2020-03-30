@@ -25,17 +25,17 @@ struct SimdCSV {
         self.log = log
     }
     
-    private static func fillInput(ptr :UnsafeMutablePointer<UInt64>) -> SimdInput {
+    private static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
         // TODO
 #if arch(x86_64)
         let lo = simd._mm256_load_epi64(ptr)
         let hi = simd._mm256_load_epi64(ptr + 4)
         let input = SimdInput(lo: lo, hi: hi)
 #elseif (arch(arm64) || arch(arm))
-        input.i0 = ptr[0]
-        input.i1 = ptr[1]
-        input.i2 = ptr[2]
-        input.i3 = ptr[3]
+        input.i0 = simd.vld1q_u8(ptr)
+        input.i1 = simd.vld1q_u8(ptr + 2)
+        input.i2 = simd.vld1q_u8(ptr + 4)
+        input.i3 = simd.vld1q_u8(ptr + 6)
 #endif
         return input
     }
@@ -94,52 +94,71 @@ struct SimdCSV {
         return quoteMask
     }
     
-    private static func flatternBits(basePtr :UnsafeMutablePointer<Int32>, base :inout Int, idx :UInt32, b :UInt64) {
+    private static func flatternBits(basePtrRaw :UnsafeMutableRawPointer!, base :inout Int, idx :UInt32, b :UInt64) {
         var bits = b
         if bits != UInt64(0) {
+            let basePtr: UnsafeMutablePointer<UInt32> = basePtrRaw.assumingMemoryBound(to: UInt32.self)
             let cnt = Int(hamming(input_num: bits))
             let nextBase = base + cnt
-            basePtr[base + 0] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 1] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 2] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 3] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 4] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 5] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 6] = Int32(idx) + trailingZeroes(input_num: bits)
-            bits = bits & (bits - 1)
-            basePtr[base + 7] = Int32(idx) + trailingZeroes(input_num: bits)
+            let one = UInt64(1)
+            var immediate :UInt64 = 0
+            basePtr[base + 0] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 1] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 2] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 3] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 4] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 5] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 6] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            immediate = UInt64(bits - one)
+            bits = bits & immediate
+            basePtr[base + 7] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
             
             if cnt > 8 {
-                basePtr[base + 8] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 9] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 10] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 11] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 12] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 13] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 14] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
-                basePtr[base + 15] = Int32(idx) + trailingZeroes(input_num: bits)
-                bits = bits & (bits - 1)
+                basePtr[base + 8] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 9] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 10] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 11] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 12] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 13] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 14] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
+                basePtr[base + 15] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                immediate = UInt64(bits - one)
+                bits = bits & immediate
             }
             
             if cnt > 16 {
                 base += 16
                 while bits != 0 {
-                   basePtr[base] = Int32(idx) + trailingZeroes(input_num: bits)
-                   bits = bits & (bits - 1)
-                   base = base + 1
+                    basePtr[base] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                    immediate = UInt64(bits - one)
+                    bits = bits & immediate
+                    base = base + 1
                 }
             }
             
@@ -147,12 +166,12 @@ struct SimdCSV {
         }
     }
     
-    private static func findIndexes(buf :UnsafeMutablePointer<UInt64>, len :size_t, pcsv :inout ParseCSV, CRLF :Bool = false) {
+    private static func findIndexes(buf :UnsafeMutableRawPointer!, len :size_t, pcsv :inout ParseCSV, CRLF :Bool = false) {
         var prevIterInsideQuote :UInt64 = 0
         var prevIterCrEnd :UInt64 = 0
         let lenminus64 :size_t = len < 64 ? 0 : len - 64
         // idx
-        let basePtr = pcsv.indexes
+        let basePtr = pcsv.data
         var base = 0
         let comma :Int8 = Int8(Array(",".utf8)[0])
         let SIMDCSV_BUFFERSIZE = 4 // it seems to be about the sweetspot.
@@ -182,9 +201,10 @@ struct SimdCSV {
                     fields[b] = (end | UInt64(sep)) & ~quoteMask
                 }
                 
-                for b in 0...SIMDCSV_BUFFERSIZE {
+                for b in 0...SIMDCSV_BUFFERSIZE
+                {
                     let internalIdx = 64 * b + idx
-                    flatternBits(basePtr: basePtr, base: &base, idx: UInt32(internalIdx), b: fields[b])
+                    flatternBits(basePtrRaw: basePtr, base: &base, idx: UInt32(internalIdx), b: fields[b])
                 }
             }
         }
@@ -211,7 +231,7 @@ struct SimdCSV {
             // the quoted bits here. Some other quote convention would
             // need to be thought about carefully
             let fieldSep = (end | sep) & ~quoteMask
-            flatternBits(basePtr: basePtr, base: &base, idx: UInt32(idx), b: fieldSep)
+            flatternBits(basePtrRaw: basePtr, base: &base, idx: UInt32(idx), b: fieldSep)
         }
     }
     
@@ -230,19 +250,18 @@ struct SimdCSV {
             // }
             let ta = TimingAccumulator(numPhasesIn:2, configVec: evts)
             var total :UInt = 0 // naive accumulator
-            for _ in 0...iterations {
-                let start = clock()
-                _ = TimingPhase(accIn: ta, phaseIn: 0)
-                p.withUnsafeBytes { rawBufferPointer in
-                    let size = rawBufferPointer.count
-                    let baseAddress :UnsafePointer<UInt64> = rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt64.self)
-                    let byteCount :Int = p.count
-                    pcsv = ParseCSV(count: byteCount)
-                    let CSVinMemory = UnsafeMutablePointer<UInt64>(mutating: baseAddress)
+            p.withUnsafeBytes { rawBufferPointer in
+                let size = rawBufferPointer.count
+                let baseAddress :UnsafeRawPointer = rawBufferPointer.baseAddress!
+                let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
+                pcsv.data = CSVinMemory
+                for _ in 0...iterations {
+                    let start = clock()
+                    _ = TimingPhase(accIn: ta, phaseIn: 0)
                     SimdCSV.findIndexes(buf: CSVinMemory, len: size, pcsv: &pcsv)
+                    _ = TimingPhase(accIn:ta, phaseIn: 1)
+                    total += (clock() - start)
                 }
-                _ = TimingPhase(accIn:ta, phaseIn: 1)
-                total += (clock() - start)
             }
             
             let volume = iterations * p.count
