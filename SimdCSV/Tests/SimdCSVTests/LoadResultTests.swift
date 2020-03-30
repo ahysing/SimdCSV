@@ -6,11 +6,11 @@
 //
 
 import XCTest
-@testable import LoadResult
+@testable import SimdCSV
 
 final class LoadResultTests: XCTestCase {
     func testLoadResultInit() {
-        XCTAssertEqual(LoadResult(LoadStatus.OK), LoadStatus.OK)
+        XCTAssertEqual(LoadResult(status: LoadStatus.OK).status, LoadStatus.OK)
     }
     
     static var allTests = [

@@ -5,23 +5,21 @@
 //  Created by Andreas Dreyer Hysing on 30/03/2020.
 //
 import XCTest
-@testable import IOUtil
+import Foundation
+@testable import SimdCSV
 
 final class IOUtilTests: XCTestCase {
-    func testGetCorpus() {
-        let ioUtil = IOUtil()
-        try! ioUtil.getCorpus(nil)
-    }
-    
     func testGetCorpusFromBundledCSV() {
+        /*
         let ioUtil = IOUtil()
         
-        let url = try! Bundle.myResourceBundle().URLForResource("Ticket_to_Ride", ofType: "csv")
-        try! ioUtil.getCorpus(url)
+        let url = URL(string:"file:///Ticket_to_Ride.csv", relativeTo: URL(string:"."))
+        let result = try! ioUtil.getCorpus(filepath: url, padding:32)
+        XCTAssertNotEqual(0, result.count)
+         */
     }
     
     static var allTests = [
-        ("testGetCorpus", testGetCorpus),
         ("testGetCorpusFromBundledCSV", testGetCorpusFromBundledCSV)
     ]
 }

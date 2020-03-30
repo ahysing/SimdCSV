@@ -6,9 +6,9 @@
 //
 
 import XCTest
-@testable import LoadStatus
+@testable import SimdCSV
 
-final class LoadResultTests: XCTestCase {
+final class LoadStatusTests: XCTestCase {
     func testSturctHasOK() {
         XCTAssertEqual(LoadStatus.OK, LoadStatus.OK)
     }

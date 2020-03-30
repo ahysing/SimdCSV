@@ -6,7 +6,7 @@
 //
 
 public class LoadResult {
-    private let status: LoadStatus
+    public let status: LoadStatus
     init(status :LoadStatus = LoadStatus.OK) {
         self.status = status
     }
