@@ -18,7 +18,13 @@ private let PERF_COUNT_HW_CACHE_MISSES :Int32 = 16
 private let PERF_COUNT_HW_REF_CPU_CYCLES :Int32 = 32
 
 struct SimdCSV {
+#if arch(x86_64)
+    public let compileSettings = "x86_64"
+#elseif (arch(arm64))
     public let compileSettings = "neon"
+#else
+    public let compileSettings = ""
+#endif
     public let hasSIMD = SIMD_COMPILER_HAS_REQUIRED_FEATURES
     private let log :OSLog
     init(log :OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")) {
@@ -26,12 +32,12 @@ struct SimdCSV {
     }
     
     private static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
-        // TODO
 #if arch(x86_64)
-        let lo = simd._mm256_load_epi64(ptr)
-        let hi = simd._mm256_load_epi64(ptr + 4)
-        let input = SimdInput(lo: lo, hi: hi)
-#elseif (arch(arm64) || arch(arm))
+        let lo :simd.__m256i = simd._mm256_load_epi64(ptr)
+        let hi :simd.__m256i = simd._mm256_load_epi64(ptr + 8)
+        let input = SimdInput(lo:lo, hi:hi)
+#elseif (arch(arm64))
+        let input = SimdInput()
         input.i0 = simd.vld1q_u8(ptr)
         input.i1 = simd.vld1q_u8(ptr + 2)
         input.i2 = simd.vld1q_u8(ptr + 4)
@@ -42,7 +48,7 @@ struct SimdCSV {
     
     // a straightforward comparison of a mask against input. 5 uops; would be
     // cheaper in AVX512.
-    private static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> Int64 {
+    internal static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> Int64 {
 #if arch(x86_64)
         let mask = simd._mm256_set_epi8(m, m, m, m,
                                         m, m, m, m,
@@ -53,10 +59,13 @@ struct SimdCSV {
                                         m, m, m, m,
                                         m, m, m, m)
         let cmpRes0 = simd._mm256_cmpeq_epi8(input.lo, mask)
-        let res0 :Int64 = Int64(UInt32(simd._mm256_movemask_epi8(cmpRes0)))
+        // let res0 :Int64 = Int64(UInt32(simd._mm256_movemask_epi8(cmpRes0)))
+        let res0 :Int64 = 0
         let cmpRes1 = simd._mm256_cmpeq_epi8(input.hi, mask)
-        let res1 :Int64 = Int64(simd._mm256_movemask_epi8(cmpRes1))
+        //let res1 :Int64 = Int64(simd._mm256_movemask_epi8(cmpRes1))
+        let res1 :Int64 = 0
         return res0 | (res1 << 32)
+        return Int64(0)
 #elseif (arch(arm64) || arch(arm))
         let mask = simd.vmovq_n_u8(m)
         let cmpRes0 = simd.vceqq_u8(input.i0, mask)

@@ -11,7 +11,8 @@ import simd
 struct SimdInput {
     var lo :simd.__m256i
     var hi :simd.__m256i
-    init(lo:simd.__m256i, hi:simd.__m256i) {
+    init(lo:simd.__m256i = SIMD4<Int64>(Int64(0), Int64(0), Int64(0), Int64(0)),
+         hi:simd.__m256i = SIMD4<Int64>(Int64(0), Int64(0), Int64(0), Int64(0))) {
         self.lo = lo
         self.hi = hi
     }
