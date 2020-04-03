@@ -164,7 +164,7 @@ struct SimdCSV {
         return quoteMask
     }
     
-    private static func flatternBits(basePtrRaw :UnsafeMutableRawPointer!, base :inout Int, idx :UInt32, b :UInt64) {
+    internal static func flatternBits(basePtrRaw :UnsafeMutableRawPointer!, base :inout Int, idx :UInt32, b :UInt64) {
         var bits = b
         if bits != UInt64(0) {
             let basePtr: UnsafeMutablePointer<UInt32> = basePtrRaw.assumingMemoryBound(to: UInt32.self)

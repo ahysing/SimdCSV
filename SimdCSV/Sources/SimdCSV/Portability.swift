@@ -1,13 +1,11 @@
 //
-//  File.swift
+//  Portability.swift
 //  
 //
 //  Created by Andreas Dreyer Hysing on 27/03/2020.
 //
 
 import simd
-import Foundation
-
 func add_overflow(value1 :UInt64, value2 :UInt64, result :UnsafeMutablePointer<UInt64>!) ->  Bool {
     return simd._addcarry_u64(0, value1, value2, result) != 0
 }

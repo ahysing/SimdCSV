@@ -127,11 +127,26 @@ final class SimdCSVTests: XCTestCase {
         XCTAssertEqual(63, result[63])
     }
     
+    func testFlatternBits() {
+        let values = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
+        for value in 0...63 {
+            values[value] = Int8(value)
+        }
+        var base = Int()
+        let idx = UInt32()
+        let b = UInt64(64)
+        
+        SimdCSV.flatternBits(basePtrRaw:values, base:&base, idx:idx, b:b)
+        
+        XCTAssertNotEqual(Int(), base)
+    }
+    
     static var allTests = [
         ("testCompilerSettings", testCompilerSettings),
         ("testCmpMaskAgainstInputIsRepeatingComma", testCmpMaskAgainstInputIsRepeatingComma),
         ("testCmpMaskAgainstInputIsCommaInPosition0", testCmpMaskAgainstInputIsCommaInPosition0),
         ("testCmpMaskAgainstInputIsCommaInPosition0And1", testCmpMaskAgainstInputIsCommaInPosition0And1),
+        ("testFlatternBits", testFlatternBits),
         ("testHasSIMD", testHasSIMD)
     ]
 }
