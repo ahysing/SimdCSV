@@ -31,42 +31,101 @@ struct SimdCSV {
         self.log = log
     }
     
+    
     private static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
 #if arch(x86_64)
-        let lo :simd.__m256i = simd._mm256_load_epi64(ptr)
-        let hi :simd.__m256i = simd._mm256_load_epi64(ptr + 8)
-        let input = SimdInput(lo:lo, hi:hi)
-#elseif (arch(arm64))
-        let input = SimdInput()
-        input.i0 = simd.vld1q_u8(ptr)
-        input.i1 = simd.vld1q_u8(ptr + 2)
-        input.i2 = simd.vld1q_u8(ptr + 4)
-        input.i3 = simd.vld1q_u8(ptr + 6)
-#endif
+        
+        // let lo :simd.__m256i = simd._mm256_load_epi64(ptr)
+        // let hi :simd.__m256i = simd._mm256_load_epi64(ptr + 8)
+        // let input = SimdInput(lo:lo, hi:hi)
+        let values = ptr.bindMemory(to: Int8.self, capacity: 64)
+        let input = SimdInput(letters: SIMD64<Int8>(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31], values[32], values[33], values[34], values[35], values[36], values[37], values[38], values[39], values[40], values[41], values[42], values[43], values[44], values[45], values[46], values[47], values[48], values[49], values[50], values[51], values[52], values[53], values[54], values[55], values[56], values[57], values[58], values[59], values[60], values[61], values[62], values[63]))
         return input
+#elseif arch(arm64)
+        let input = SimdInput(i0: simd.vld1q_u8(ptr),
+                              i1: simd.vld1q_u8(ptr + 2),
+                              i2: simd.vld1q_u8(ptr + 4),
+                              i3: simd.vld1q_u8(ptr + 6))
+        return input
+#endif
     }
-    
-    // a straightforward comparison of a mask against input. 5 uops; would be
+
+    // a straightforward comparison of a mask against input. Would be
     // cheaper in AVX512.
-    internal static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> Int64 {
+    internal static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> UInt64 {
 #if arch(x86_64)
-        let mask = simd._mm256_set_epi8(m, m, m, m,
-                                        m, m, m, m,
-                                        m, m, m, m,
-                                        m, m, m, m,
-                                        m, m, m, m,
-                                        m, m, m, m,
-                                        m, m, m, m,
-                                        m, m, m, m)
-        let cmpRes0 = simd._mm256_cmpeq_epi8(input.lo, mask)
-        // let res0 :Int64 = Int64(UInt32(simd._mm256_movemask_epi8(cmpRes0)))
-        let res0 :Int64 = 0
-        let cmpRes1 = simd._mm256_cmpeq_epi8(input.hi, mask)
-        //let res1 :Int64 = Int64(simd._mm256_movemask_epi8(cmpRes1))
-        let res1 :Int64 = 0
-        return res0 | (res1 << 32)
-        return Int64(0)
-#elseif (arch(arm64) || arch(arm))
+        let compareLetters :SIMDMask<SIMD64<Int8>> = input.letters .== m
+        var result = SIMD64<UInt8>(repeating: 0)
+        result.replace(with: 255, where: compareLetters)
+        var bitmaskForM = (UInt64(result[0]) << 0)
+             bitmaskForM |= (UInt64(result[1]) << 1)
+             bitmaskForM |= (UInt64(result[2]) << 2)
+             bitmaskForM |= (UInt64(result[3]) << 3)
+             bitmaskForM |= (UInt64(result[4]) << 4)
+             bitmaskForM |= (UInt64(result[5]) << 5)
+             bitmaskForM |= (UInt64(result[6]) << 6)
+             bitmaskForM |= (UInt64(result[7]) << 7)
+             bitmaskForM |= (UInt64(result[8]) << 8)
+             bitmaskForM |= (UInt64(result[9]) << 9)
+             bitmaskForM |= (UInt64(result[10]) << 10)
+             bitmaskForM |= (UInt64(result[11]) << 11)
+             bitmaskForM |= (UInt64(result[12]) << 12)
+             bitmaskForM |= (UInt64(result[13]) << 13)
+             bitmaskForM |= (UInt64(result[14]) << 14)
+             bitmaskForM |= (UInt64(result[15]) << 15)
+             bitmaskForM |= (UInt64(result[16]) << 16)
+             bitmaskForM |= (UInt64(result[17]) << 17)
+             bitmaskForM |= (UInt64(result[18]) << 18)
+             bitmaskForM |= (UInt64(result[19]) << 19)
+             bitmaskForM |= (UInt64(result[20]) << 20)
+             bitmaskForM |= (UInt64(result[21]) << 21)
+             bitmaskForM |= (UInt64(result[22]) << 22)
+             bitmaskForM |= (UInt64(result[23]) << 23)
+             bitmaskForM |= (UInt64(result[24]) << 24)
+             bitmaskForM |= (UInt64(result[25]) << 25)
+             bitmaskForM |= (UInt64(result[26]) << 26)
+             bitmaskForM |= (UInt64(result[27]) << 27)
+             bitmaskForM |= (UInt64(result[28]) << 28)
+             bitmaskForM |= (UInt64(result[29]) << 29)
+             bitmaskForM |= (UInt64(result[30]) << 30)
+             bitmaskForM |= (UInt64(result[31]) << 31)
+             bitmaskForM |= (UInt64(result[32]) << 32)
+             bitmaskForM |= (UInt64(result[33]) << 33)
+             bitmaskForM |= (UInt64(result[34]) << 34)
+             bitmaskForM |= (UInt64(result[35]) << 35)
+             bitmaskForM |= (UInt64(result[36]) << 36)
+             bitmaskForM |= (UInt64(result[37]) << 37)
+             bitmaskForM |= (UInt64(result[38]) << 38)
+             bitmaskForM |= (UInt64(result[39]) << 39)
+             bitmaskForM |= (UInt64(result[40]) << 40)
+             bitmaskForM |= (UInt64(result[41]) << 41)
+             bitmaskForM |= (UInt64(result[42]) << 42)
+             bitmaskForM |= (UInt64(result[43]) << 43)
+             bitmaskForM |= (UInt64(result[44]) << 44)
+             bitmaskForM |= (UInt64(result[45]) << 45)
+             bitmaskForM |= (UInt64(result[46]) << 46)
+             bitmaskForM |= (UInt64(result[47]) << 47)
+             bitmaskForM |= (UInt64(result[48]) << 48)
+             bitmaskForM |= (UInt64(result[49]) << 49)
+             bitmaskForM |= (UInt64(result[50]) << 50)
+             bitmaskForM |= (UInt64(result[51]) << 51)
+             bitmaskForM |= (UInt64(result[52]) << 52)
+             bitmaskForM |= (UInt64(result[53]) << 53)
+             bitmaskForM |= (UInt64(result[54]) << 54)
+             bitmaskForM |= (UInt64(result[55]) << 55)
+             bitmaskForM |= (UInt64(result[56]) << 56)
+             bitmaskForM |= (UInt64(result[57]) << 57)
+             bitmaskForM |= (UInt64(result[58]) << 58)
+             bitmaskForM |= (UInt64(result[59]) << 59)
+             bitmaskForM |= (UInt64(result[60]) << 60)
+             bitmaskForM |= (UInt64(result[61]) << 61)
+             bitmaskForM |= (UInt64(result[62]) << 62)
+             bitmaskForM |= (UInt64(result[63]) << 63)
+        return bitmaskForM
+        // let res0 = simd._mm256_movemask_epi8(cmpRes0) // this command is faster, but caused havok in XCode. The compiler errors tells us nothing. we blame bugs in xcode for this matter.
+        // let x : __mmask32 = simd._mm256_bitshuffle_epi64_mask(cmpRes1, collectLeastSiginificantInByte)
+        //        return UInt64(cmpAsLowerBits) | (UInt64(cmpAsUpperBits) << 32)
+#elseif arch(arm64)
         let mask = simd.vmovq_n_u8(m)
         let cmpRes0 = simd.vceqq_u8(input.i0, mask)
         let cmpRes1 = simd.vceqq_u8(input.i1, mask)
@@ -86,7 +145,7 @@ struct SimdCSV {
         let m = Int8(Array("\"".utf8)[0])
         let quoteBits = cmpMaskAgainstInput(input: input, m: m)
 #if arch(x86_64)
-        let a :simd.__m128i = simd._mm_set_epi64x(0, quoteBits)
+        let a :simd.__m128i = simd._mm_set_epi64x(0, Int64(quoteBits))
         let b :simd.__m128i = simd._mm_set1_epi8(Int8.min)
         // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
         let immediate = simd._mm_mul_epi32(a, b)

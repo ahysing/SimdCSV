@@ -11,7 +11,7 @@ final class SimdCSVTests: XCTestCase {
     }
 
     func testCmpMaskAgainstInput() {
-        let input = SimdInput()
+        let input = SimdInput(letters: SIMD64<Int8>(repeating:0))
         let mask :UInt8 = 7
         let result = SimdCSV.cmpMaskAgainstInput(input:input, m: Int8(mask))
         
