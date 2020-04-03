@@ -10,7 +10,7 @@ import XCTest
 import simd
 final class SimdInputTests: XCTestCase {
     func testInit() {
-        let _ = SimdInput(letters: SIMD64<Int8>(repeating:0))
+        let _ = SimdInput(letters: SIMD64<Int8>.zero)
     }
     
     static var allTests = [

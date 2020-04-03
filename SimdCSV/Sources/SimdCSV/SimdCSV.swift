@@ -55,8 +55,8 @@ struct SimdCSV {
     internal static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> UInt64 {
 #if arch(x86_64)
         let compareLetters :SIMDMask<SIMD64<Int8>> = input.letters .== m
-        var result = SIMD64<UInt8>(repeating: 0)
-        result.replace(with: 255, where: compareLetters)
+        var result = SIMD64<Int8>.zero
+        result.replace(with: 1, where: compareLetters)
         var bitmaskForM = (UInt64(result[0]) << 0)
              bitmaskForM |= (UInt64(result[1]) << 1)
              bitmaskForM |= (UInt64(result[2]) << 2)
@@ -135,6 +135,7 @@ struct SimdCSV {
 #endif
     }
     
+    fileprivate static let comma = Int8(Array("\"".utf8)[0])
     // return the quote mask (which is a half-open mask that covers the first
     // quote in a quote pair and everything in the quote pair)
     // We also update the prev_iter_inside_quote value to
@@ -142,10 +143,10 @@ struct SimdCSV {
     // quote pair; if so, this  inverts our behavior of  whether we're inside
     // quotes for the next iteration.
     private static func findQuoteMask(input :SimdInput, prevIterInsideQuote :inout UInt64) -> UInt64 {
-        let m = Int8(Array("\"".utf8)[0])
+        let m = comma
         let quoteBits = cmpMaskAgainstInput(input: input, m: m)
 #if arch(x86_64)
-        let a :simd.__m128i = simd._mm_set_epi64x(0, Int64(quoteBits))
+        let a :simd.__m128i = simd._mm_set_epi64x(0, quoteBits)
         let b :simd.__m128i = simd._mm_set1_epi8(Int8.min)
         // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
         let immediate = simd._mm_mul_epi32(a, b)
