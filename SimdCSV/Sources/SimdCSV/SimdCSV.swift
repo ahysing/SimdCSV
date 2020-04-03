@@ -32,7 +32,7 @@ struct SimdCSV {
     }
     
     
-    private static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
+    internal static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
 #if arch(x86_64)
         
         // let lo :simd.__m256i = simd._mm256_load_epi64(ptr)
@@ -146,7 +146,8 @@ struct SimdCSV {
         let m = comma
         let quoteBits = cmpMaskAgainstInput(input: input, m: m)
 #if arch(x86_64)
-        let a :simd.__m128i = simd._mm_set_epi64x(0, quoteBits)
+        let quoteBitsS = Int64(quoteBits)
+        let a :simd.__m128i = simd._mm_set_epi64x(0, quoteBitsS)
         let b :simd.__m128i = simd._mm_set1_epi8(Int8.min)
         // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
         let immediate = simd._mm_mul_epi32(a, b)
