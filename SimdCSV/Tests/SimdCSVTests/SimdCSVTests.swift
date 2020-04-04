@@ -1,9 +1,11 @@
 import XCTest
 @testable import SimdCSV
 
+@available(tvOS 10.0, *)
 final class SimdCSVTests: XCTestCase {
     func testCompilerSettings() {
         XCTAssertTrue(["neon", "x86_64"].contains(SimdCSV().compileSettings))
+        XCTAssertNotEqual(SimdCSV().hasSIMD, 0)
     }
     
     func testHasSIMD() {

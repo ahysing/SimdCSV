@@ -7,6 +7,8 @@
 
 import simd
 
+// #if (arch(x86_64) || arch(i386))
+
 func countTrailingZerosSwift(input_num :UInt64) -> Int32 {
     var counter :Int32 = 0
     var mask :UInt64 = 1
@@ -23,7 +25,7 @@ func countTrailingZerosSwift(input_num :UInt64) -> Int32 {
     
     return counter
 }
-// #if (arch(x86_64) || arch(i386))
+
 func trailingZeros(input_num :UInt64) -> Int32 {
 #if arch(x86_64)
     let result = simd.__tzcnt_u64(input_num)

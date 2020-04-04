@@ -27,6 +27,7 @@ struct SimdCSV {
 #endif
     public let hasSIMD = SIMD_COMPILER_HAS_REQUIRED_FEATURES
     private let log :OSLog
+    @available(tvOS 10.0, *)
     init(log :OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")) {
         self.log = log
     }
@@ -47,7 +48,7 @@ struct SimdCSV {
         let compareLetters :SIMDMask<SIMD64<Int8>> = input.letters .== m
         var result = SIMD64<Int8>.zero
         result.replace(with: 1, where: compareLetters)
-        var bitmaskForM = (UInt64(result[0]) << 0)
+        var bitmaskForM = UInt64(result[0])
              bitmaskForM |= (UInt64(result[1]) << 1)
              bitmaskForM |= (UInt64(result[2]) << 2)
              bitmaskForM |= (UInt64(result[3]) << 3)
@@ -135,7 +136,7 @@ struct SimdCSV {
         let immediate = simd._mm_mul_epi32(a, b)
         var quoteMask = UInt64(simd._mm_cvtsi128_si64(immediate))
 #elseif (arch(arm64) || arch(arm))
-        let minusOne :UInt64 = 1
+        let minusOne :UInt64 = simd.___mb_cur_max()
         var quoteMask :UInt64 = 1 // TODO
 #endif
         quoteMask ^= prevIterInsideQuote
@@ -234,7 +235,6 @@ struct SimdCSV {
             for idx in stride(from: 0, to: finish, by: by) {
                 for b in 0...SIMDCSV_BUFFERSIZE {
                     let internalIdx :size_t = 64 * b + idx
-                    // __builtin_prefetch(buf + internal_idx + 128); on microsoft c++ compilers
                     let bufWithOffset = buf + internalIdx
                     let input = fillInput(ptr: bufWithOffset)
                     let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
@@ -319,32 +319,40 @@ struct SimdCSV {
             let volume = iterations * p.count
             let timeInS = total / UInt(CLOCKS_PER_SEC)
             if verbose {
-                os_log("[verbose] Total time in (s) %@", self.log, timeInS)
-                os_log("[verbose] Number of iterations %@", self.log, volume)
-                 /*
-                os_log("[verbose] Number of cycles %@", self.log, cycles)
-               
-                os_log("[verbose] Number of cycles per byte %@", self.log, cycles)
-                os_log("[verbose] Number of cycles (ref) %@", self.log, cycles)
-                os_log("[verbose] Number of cycles (ref) per byte %@", self.log, cycles)
-                os_log("[verbose] Number of instructions %@", self.log, cycles)
-                os_log("[verbose] Number of instructions per byte %@", self.log, cycles)
-                os_log("[verbose] Number of instructions per cycle %@", self.log, cycles)
-                os_log("[verbose] Number of branch misses %@", self.log, cycles)
-                os_log("[verbose] Number of branch misses per byte %@", self.log, cycles)
-                os_log("[verbose] Number of cache references %@", self.log, cycles)
-                os_log("[verbose] Number of cache references per byte %@", self.log, cycles)
-                os_log("[verbose] Number of cache misses %@", self.log, cycles)
-                os_log("[verbose] Number of cache misses per byte %@", self.log, cycles)
-                os_log("[verbose] CPU frequency (effective) %@", self.log, cycles)
-                os_log("[verbose] CPU frequency (base) %@", self.log, cycles)
-                */
-                os_log("[verbose] %@", self.log, "done")
+                if #available(tvOS 10.0, *) {
+                    os_log("[verbose] Total time in (s) %@", self.log, timeInS)
+                    os_log("[verbose] Number of iterations %@", self.log, volume)
+                    /*
+                      os_log("[verbose] Number of cycles %@", self.log, cycles)
+                     
+                      os_log("[verbose] Number of cycles per byte %@", self.log, cycles)
+                      os_log("[verbose] Number of cycles (ref) %@", self.log, cycles)
+                      os_log("[verbose] Number of cycles (ref) per byte %@", self.log, cycles)
+                      os_log("[verbose] Number of instructions %@", self.log, cycles)
+                      os_log("[verbose] Number of instructions per byte %@", self.log, cycles)
+                      os_log("[verbose] Number of instructions per cycle %@", self.log, cycles)
+                      os_log("[verbose] Number of branch misses %@", self.log, cycles)
+                      os_log("[verbose] Number of branch misses per byte %@", self.log, cycles)
+                      os_log("[verbose] Number of cache references %@", self.log, cycles)
+                      os_log("[verbose] Number of cache references per byte %@", self.log, cycles)
+                      os_log("[verbose] Number of cache misses %@", self.log, cycles)
+                      os_log("[verbose] Number of cache misses per byte %@", self.log, cycles)
+                      os_log("[verbose] CPU frequency (effective) %@", self.log, cycles)
+                      os_log("[verbose] CPU frequency (base) %@", self.log, cycles)
+                      */
+                      os_log("[verbose] %@", self.log, "done")
+                } else {
+                    // Fallback on earlier versions
+                }
             }
             
             return loadResult
         } catch {
-            os_log("[ERROR] %@", "\(error).")
+            if #available(tvOS 10.0, *) {
+                os_log("[ERROR] %@", "\(error).")
+            } else {
+                // Fallback on earlier versions
+            }
             return LoadResult(status: LoadStatus.Failed)
         }
     }
