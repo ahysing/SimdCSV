@@ -26,8 +26,10 @@ struct SimdCSV {
     public let compileSettings = ""
 #endif
     public let hasSIMD = SIMD_COMPILER_HAS_REQUIRED_FEATURES
+    
+    
     private let log :OSLog
-    @available(tvOS 10.0, *)
+    @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     init(log :OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")) {
         self.log = log
     }
@@ -135,8 +137,8 @@ struct SimdCSV {
         // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
         let immediate = simd._mm_mul_epi32(a, b)
         var quoteMask = UInt64(simd._mm_cvtsi128_si64(immediate))
-#elseif (arch(arm64) || arch(arm))
-        let minusOne :UInt64 = simd.___mb_cur_max()
+#else
+        let minusOne :UInt64 = 1
         var quoteMask :UInt64 = 1 // TODO
 #endif
         quoteMask ^= prevIterInsideQuote
@@ -319,7 +321,7 @@ struct SimdCSV {
             let volume = iterations * p.count
             let timeInS = total / UInt(CLOCKS_PER_SEC)
             if verbose {
-                if #available(tvOS 10.0, *) {
+                if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
                     os_log("[verbose] Total time in (s) %@", self.log, timeInS)
                     os_log("[verbose] Number of iterations %@", self.log, volume)
                     /*
@@ -348,7 +350,7 @@ struct SimdCSV {
             
             return loadResult
         } catch {
-            if #available(tvOS 10.0, *) {
+            if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
                 os_log("[ERROR] %@", "\(error).")
             } else {
                 // Fallback on earlier versions

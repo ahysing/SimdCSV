@@ -4,6 +4,8 @@
 //
 //  Created by Andreas Dreyer Hysing on 30/03/2020.
 //
+#if !os(watchOS)
+
 import XCTest
 @testable import SimdCSV
 
@@ -17,3 +19,5 @@ final class SimdInputTests: XCTestCase {
         ("testInit", testInit)
     ]
 }
+
+#endif

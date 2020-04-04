@@ -4,7 +4,7 @@
 //
 //  Created by Andreas Dreyer Hysing on 03/04/2020.
 //
-
+#if !os(watchOS)
 import XCTest
 @testable import SimdCSV
 
@@ -154,3 +154,4 @@ final class PortabilityTests: XCTestCase {
         ("testCountTrailingZerosSwiftInputIs32BIt", testCountTrailingZerosSwiftInputIs32BIt)
     ]
 }
+#endif

@@ -1,7 +1,8 @@
+#if !os(watchOS)
 import XCTest
 @testable import SimdCSV
 
-@available(tvOS 10.0, *)
+@available(tvOS 10.0, watchOS 3.0, iOS 10.0, macOS 10.0, *)
 final class SimdCSVTests: XCTestCase {
     func testCompilerSettings() {
         XCTAssertTrue(["neon", "x86_64"].contains(SimdCSV().compileSettings))
@@ -152,3 +153,4 @@ final class SimdCSVTests: XCTestCase {
         ("testHasSIMD", testHasSIMD)
     ]
 }
+#endif

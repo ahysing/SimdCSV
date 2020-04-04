@@ -4,6 +4,7 @@
 //
 //  Created by Andreas Dreyer Hysing on 30/03/2020.
 //
+#if !os(watchOS)
 import XCTest
 import Foundation
 @testable import SimdCSV
@@ -23,3 +24,4 @@ final class IOUtilTests: XCTestCase {
         ("testGetCorpusFromBundledCSV", testGetCorpusFromBundledCSV)
     ]
 }
+#endif 
