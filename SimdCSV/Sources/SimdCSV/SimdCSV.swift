@@ -33,27 +33,17 @@ struct SimdCSV {
     
     
     internal static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
-#if arch(x86_64)
-        
         // let lo :simd.__m256i = simd._mm256_load_epi64(ptr)
         // let hi :simd.__m256i = simd._mm256_load_epi64(ptr + 8)
         // let input = SimdInput(lo:lo, hi:hi)
         let values = ptr.bindMemory(to: Int8.self, capacity: 64)
         let input = SimdInput(letters: SIMD64<Int8>(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31], values[32], values[33], values[34], values[35], values[36], values[37], values[38], values[39], values[40], values[41], values[42], values[43], values[44], values[45], values[46], values[47], values[48], values[49], values[50], values[51], values[52], values[53], values[54], values[55], values[56], values[57], values[58], values[59], values[60], values[61], values[62], values[63]))
         return input
-#elseif arch(arm64)
-        let input = SimdInput(i0: simd.vld1q_u8(ptr),
-                              i1: simd.vld1q_u8(ptr + 2),
-                              i2: simd.vld1q_u8(ptr + 4),
-                              i3: simd.vld1q_u8(ptr + 6))
-        return input
-#endif
     }
 
     // a straightforward comparison of a mask against input. Would be
     // cheaper in AVX512.
     internal static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> UInt64 {
-#if arch(x86_64)
         let compareLetters :SIMDMask<SIMD64<Int8>> = input.letters .== m
         var result = SIMD64<Int8>.zero
         result.replace(with: 1, where: compareLetters)
@@ -125,14 +115,6 @@ struct SimdCSV {
         // let res0 = simd._mm256_movemask_epi8(cmpRes0) // this command is faster, but caused havok in XCode. The compiler errors tells us nothing. we blame bugs in xcode for this matter.
         // let x : __mmask32 = simd._mm256_bitshuffle_epi64_mask(cmpRes1, collectLeastSiginificantInByte)
         //        return UInt64(cmpAsLowerBits) | (UInt64(cmpAsUpperBits) << 32)
-#elseif arch(arm64)
-        let mask = simd.vmovq_n_u8(m)
-        let cmpRes0 = simd.vceqq_u8(input.i0, mask)
-        let cmpRes1 = simd.vceqq_u8(input.i1, mask)
-        let cmpRes2 = simd.vceqq_u8(input.i2, mask)
-        let cmpRes3 = simd.vceqq_u8(input.i3, mask)
-        return neonmovemaskBulk(cmpRes0, cmpRes1, cmpRes2, cmpRes3)
-#endif
     }
     
     fileprivate static let comma = Int8(Array("\"".utf8)[0])
@@ -153,8 +135,8 @@ struct SimdCSV {
         let immediate = simd._mm_mul_epi32(a, b)
         var quoteMask = UInt64(simd._mm_cvtsi128_si64(immediate))
 #elseif (arch(arm64) || arch(arm))
-        let minusOne :UInt64 = -1
-        let quoteMask :UInt64 = simd.vmull_p64(minusOne, quoteBits)
+        let minusOne :UInt64 = 1
+        var quoteMask :UInt64 = 1 // TODO
 #endif
         quoteMask ^= prevIterInsideQuote
         // right shift of a signed value expected to be well-defined and standard
@@ -172,52 +154,52 @@ struct SimdCSV {
             let nextBase = base + cnt
             let one = UInt64(1)
             var immediate :UInt64 = 0
-            basePtr[base + 0] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 0] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 1] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 1] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 2] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 2] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 3] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 3] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 4] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 4] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 5] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 5] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 6] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 6] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 7] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+            basePtr[base + 7] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
             
             if cnt > 8 {
-                basePtr[base + 8] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 8] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 9] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 9] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 10] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 10] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 11] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 11] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 12] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 12] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 13] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 13] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 14] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 14] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 15] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                basePtr[base + 15] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
             }
@@ -225,7 +207,7 @@ struct SimdCSV {
             if cnt > 16 {
                 base += 16
                 while bits != 0 {
-                    basePtr[base] = UInt32(idx) + UInt32(trailingZeroes(input_num: bits))
+                    basePtr[base] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
                     immediate = UInt64(bits - one)
                     bits = bits & immediate
                     base = base + 1
