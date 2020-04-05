@@ -9,6 +9,7 @@ import Foundation
 
 public struct ParseCSV {
     var numberOfIndexes :size_t = 0
-    var indexes :UnsafeMutablePointer<UInt32>! = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+    // var indexes :UnsafeMutablePointer<UInt32>! = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+    var indexes :[UInt32]! = []
     var data :Data! = nil
 }

@@ -167,8 +167,8 @@ struct SimdCSV {
         prevIterInsideQuote = UInt64(Int64(quoteMask) >> 63)
         return quoteMask
     }
-    
-    internal static func flattenBits(basePtr :UnsafeMutablePointer<UInt32>, base :inout Int, idx :size_t, b :UInt64) {
+   //     internal static func flattenBits(basePtr :UnsafeMutablePointer<UInt32>, base :inout Int, idx :size_t, b :UInt64) {
+    internal static func flattenBits(basePtr :inout [UInt32]!, base :inout Int, idx :size_t, b :UInt64) {
         var bits = b
         if bits != UInt64(0) {
             let cnt = Int(hamming(input_num: bits))
@@ -245,7 +245,7 @@ struct SimdCSV {
         var prevIterCrEnd = UInt64.zero
         
         let lenminus64 :size_t = len < 64 ? 0 : len - 64
-        let basePtr = pcsv.indexes!
+        var basePtr: [UInt32]? = pcsv.indexes!
         var base :Int = 0
         // #ifdef SIMDCSV_BUFFERING
 
@@ -279,7 +279,7 @@ struct SimdCSV {
                 for b in 0...SIMDCSV_BUFFERSIZE
                 {
                     let internalIdx :size_t = 64 * b + idx
-                    flattenBits(basePtr: basePtr, base: &base, idx: internalIdx, b: fields[b])
+                    flattenBits(basePtr: &basePtr, base: &base, idx: internalIdx, b: fields[b])
                 }
             }
             
@@ -309,7 +309,7 @@ struct SimdCSV {
             let fieldSep = (end | sep) & ~quoteMask
 //            let basePtr: UnsafeMutablePointer<UInt32> = basePtrRaw.assumingMemoryBound(to: UInt32.self)
 
-            flattenBits(basePtr: basePtr, base: &base, idx:idx, b: fieldSep)
+            flattenBits(basePtr: &basePtr, base: &base, idx:idx, b: fieldSep)
         }
     }
     
@@ -370,8 +370,8 @@ struct SimdCSV {
         do {
             let loadResult = LoadResult(status: LoadStatus.OK)
             var pcsv :ParseCSV = ParseCSV()
-            pcsv.indexes = UnsafeMutablePointer<UInt32>.allocate(capacity: p.count)
-
+            // pcsv.indexes = UnsafeMutablePointer<UInt32>.allocate(capacity: p.count)
+            pcsv.indexes = Array<UInt32>.init(repeating: UInt32.zero, count: p.count)
             if (verbose) {
                 let formatter = ByteCountFormatter()
                 formatter.allowedUnits = [.useAll]
