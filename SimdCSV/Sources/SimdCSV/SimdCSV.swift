@@ -8,6 +8,25 @@ import Foundation
 import simd
 import os.log
 
+#if arch(x86_64)
+import _Builtin_intrinsics.intel
+#warning("Imported Intel Intrinsics. Now we are playing with Intel SSE :)")
+#endif
+
+// What are the compile targets available?
+//
+// https://stackoverflow.com/questions/15036909/clang-how-to-list-supported-target-architectures#18576360
+// https://en.wikipedia.org/wiki/Apple-designed_processors#Apple_S5
+#if arch(arm64)
+import _Builtin_intrinsics.arm
+#warning("Imported ARM Intrinsics for ARM64. Now we are playing with ARM neon :)")
+#endif
+
+#if arch(arm)
+import _Builtin_intrinsics.arm
+#warning("Imported ARM Intrinsics for ARM7 and ARM8. Now we are playing with ARM neon :)")
+#endif
+
 public let CSV_PADDING :size_t = 64
 
 private let PERF_COUNT_HW_CPU_CYCLES :Int32 = 1
@@ -137,6 +156,9 @@ struct SimdCSV {
         // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
         let immediate = simd._mm_mul_epi32(a, b)
         var quoteMask = UInt64(simd._mm_cvtsi128_si64(immediate))
+#elseif arch(arm64)
+        let minusOne :UInt64 = 1
+        var quoteMask :UInt64 = 1
 #else
         let minusOne :UInt64 = 1
         var quoteMask :UInt64 = 1 // TODO

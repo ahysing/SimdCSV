@@ -5,8 +5,6 @@
 //  Created by Andreas Dreyer Hysing on 27/03/2020.
 //
 
-import simd
-
 // #if (arch(x86_64) || arch(i386))
 
 func countTrailingZerosSwift(input_num :UInt64) -> Int32 {
@@ -27,12 +25,8 @@ func countTrailingZerosSwift(input_num :UInt64) -> Int32 {
 }
 
 func trailingZeros(input_num :UInt64) -> Int32 {
-#if arch(x86_64)
-    let result = simd.__tzcnt_u64(input_num)
+    let result =  input_num.trailingZeroBitCount
     return Int32(result)
-#else
-    return countTrailingZerosSwift(input_num: input_num)
-#endif
 }
 
 func countLeadingZerosSwift(input_num :UInt64) -> Int32 {
@@ -54,14 +48,27 @@ func countLeadingZerosSwift(input_num :UInt64) -> Int32 {
 }
 
 func leadingZeros(input_num :UInt64) -> Int32 {
-#if arch(x86_64)
-    let result = simd._lzcnt_u64(input_num)
+    // This function comes builtin with Swift.
+    // it is usually backed by hardware instructions.
+    // To lear more read about the ARM NEON in the documenttion below
+    //
+    // __builtin_neon_vclz
+    // Built-in Function: int __builtin_clzll (unsigned long long)
+    //   Similar to __builtin_clz, except the argument type is unsigned long long.
+    // ...
+    // Built-in Function: int __builtin_clz (unsigned int x)
+    //   Returns the number of leading 0-bits in x, starting at the most significant bit position. If x is 0, the result is undefined.
+    // https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
+    //
+    let result = input_num.leadingZeroBitCount
     return Int32(result)
-#else
-    return countLeadingZerosSwift(input_num: input_num)
-#endif
 }
 
+func countNumberOfBitsSwiftBuiltin(input_num :UInt64) -> UInt32 {
+    let result_int = input_num.nonzeroBitCount
+    return UInt32(result_int)
+}
+/*
 func countNumberOfBitsSwift(input_num :UInt64) -> UInt32 {
     var number = input_num
     var counter = UInt32(0)
@@ -72,14 +79,16 @@ func countNumberOfBitsSwift(input_num :UInt64) -> UInt32 {
     
     return counter
 }
+ */
+
 // hamming
 // Fast counting the number of set bits
 // input_num: the input number to count bits in
 func hamming(input_num :UInt64) -> UInt32 {
-#if arch(x86_64)
-    let result = simd.__popcntq(input_num)
-    return UInt32(result)
-#else
-    return countNumberOfBitsSwift(input_num: input_num)
-#endif
+// #if arch(x86_64)
+//     let result = simd.__popcntq(input_num)
+//     return UInt32(result)
+// #else
+    let result_int = input_num.nonzeroBitCount
+    return UInt32(result_int)
 }
