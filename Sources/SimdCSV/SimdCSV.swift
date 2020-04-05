@@ -27,7 +27,6 @@ import _Builtin_intrinsics.arm
 #warning("Imported ARM Intrinsics for ARM7 and ARM8. Now we are playing with ARM neon :)")
 #endif
 
-public let CSV_PADDING :size_t = 64
 
 private let PERF_COUNT_HW_CPU_CYCLES :Int32 = 1
 private let PERF_COUNT_HW_INSTRUCTIONS :Int32 = 2
@@ -46,6 +45,10 @@ struct SimdCSV {
 #endif
     public let hasSIMD = SIMD_COMPILER_HAS_REQUIRED_FEATURES
     
+    fileprivate static let CSV_PADDING :size_t = 64
+    fileprivate static let comma :Int8 = Int8(Array(",".utf8)[0])
+    fileprivate static let carrageReturn :Int8 = 0x0d
+    fileprivate static let lineFeed :Int8 = 0x0a
     
     private let log :OSLog
     @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
@@ -53,11 +56,7 @@ struct SimdCSV {
         self.log = log
     }
     
-    
     internal static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
-        // let lo :simd.__m256i = simd._mm256_load_epi64(ptr)
-        // let hi :simd.__m256i = simd._mm256_load_epi64(ptr + 8)
-        // let input = SimdInput(lo:lo, hi:hi)
         let values = ptr.bindMemory(to: Int8.self, capacity: 64)
         let input = SimdInput(letters: SIMD64<Int8>(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31], values[32], values[33], values[34], values[35], values[36], values[37], values[38], values[39], values[40], values[41], values[42], values[43], values[44], values[45], values[46], values[47], values[48], values[49], values[50], values[51], values[52], values[53], values[54], values[55], values[56], values[57], values[58], values[59], values[60], values[61], values[62], values[63]))
         return input
@@ -139,7 +138,6 @@ struct SimdCSV {
         //        return UInt64(cmpAsLowerBits) | (UInt64(cmpAsUpperBits) << 32)
     }
     
-    fileprivate static let comma = Int8(Array("\"".utf8)[0])
     // return the quote mask (which is a half-open mask that covers the first
     // quote in a quote pair and everything in the quote pair)
     // We also update the prev_iter_inside_quote value to
@@ -170,10 +168,9 @@ struct SimdCSV {
         return quoteMask
     }
     
-    internal static func flatternBits(basePtrRaw :UnsafeMutableRawPointer!, base :inout Int, idx :UInt32, b :UInt64) {
+    internal static func flattenBits(basePtr :UnsafeMutablePointer<UInt32>, base :inout Int, idx :size_t, b :UInt64) {
         var bits = b
         if bits != UInt64(0) {
-            let basePtr: UnsafeMutablePointer<UInt32> = basePtrRaw.assumingMemoryBound(to: UInt32.self)
             let cnt = Int(hamming(input_num: bits))
             let nextBase = base + cnt
             let one = UInt64(1)
@@ -241,64 +238,68 @@ struct SimdCSV {
             base = nextBase
         }
     }
-    
+        
     private static func findIndexes(buf :UnsafeMutableRawPointer!, len :size_t, pcsv :inout ParseCSV, CRLF :Bool = false) {
-        var prevIterInsideQuote :UInt64 = 0
-        var prevIterCrEnd :UInt64 = 0
+        var prevIterInsideQuote = UInt64.zero
+        // Used by CRLF
+        var prevIterCrEnd = UInt64.zero
+        
         let lenminus64 :size_t = len < 64 ? 0 : len - 64
-        // idx
-        let basePtr = pcsv.data
-        var base = 0
-        let comma :Int8 = Int8(Array(",".utf8)[0])
+        let basePtr = pcsv.indexes!
+        var base :Int = 0
+        // #ifdef SIMDCSV_BUFFERING
+
         let SIMDCSV_BUFFERSIZE = 4 // it seems to be about the sweetspot.
         if lenminus64 > 64 * SIMDCSV_BUFFERSIZE {
             var fields :[UInt64] = [0, 0, 0, 0]
+            let globalIdx :size_t = 0
             let finish = (lenminus64 - 64 * SIMDCSV_BUFFERSIZE + 1)
             let by = 64 * SIMDCSV_BUFFERSIZE
-            for idx in stride(from: 0, to: finish, by: by) {
+            for idx in stride(from: globalIdx, to: finish, by: by) {
                 for b in 0...SIMDCSV_BUFFERSIZE {
                     let internalIdx :size_t = 64 * b + idx
                     let bufWithOffset = buf + internalIdx
                     let input = fillInput(ptr: bufWithOffset)
                     let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
-                    let sep = cmpMaskAgainstInput(input: input, m: comma)
-                    var end :UInt64
+                    let sep = UInt64(cmpMaskAgainstInput(input: input, m: comma))
+                    var end :UInt64 = UInt64.zero
                     if CRLF {
-                        let cr :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: 0x0d))
+                        let cr :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: carrageReturn))
                         let crAdjusted :UInt64 = (cr << 1) | prevIterCrEnd
-                        let lf :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: 0x0a))
+                        let lf :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
                         end = (lf & crAdjusted)
                         prevIterCrEnd = cr >> 63
                     } else {
-                        end = UInt64(cmpMaskAgainstInput(input: input, m: 0x0a))
+                        end = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
                     }
                     
-                    fields[b] = (end | UInt64(sep)) & ~quoteMask
+                    fields[b] = (end | sep) & ~quoteMask
                 }
                 
                 for b in 0...SIMDCSV_BUFFERSIZE
                 {
-                    let internalIdx = 64 * b + idx
-                    flatternBits(basePtrRaw: basePtr, base: &base, idx: UInt32(internalIdx), b: fields[b])
+                    let internalIdx :size_t = 64 * b + idx
+                    flattenBits(basePtr: basePtr, base: &base, idx: internalIdx, b: fields[b])
                 }
             }
+            
+            pcsv.numberOfIndexes = base
         }
         
         // tail end will be unbuffered
         for idx in stride(from: 0, to: lenminus64, by: 64) {
-            //       __builtin_prefetch(buf + idx + 128); on Microsoft visual studio compilers
             let input = fillInput(ptr:buf + idx)
             let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
             let sep = UInt64(cmpMaskAgainstInput(input: input, m: comma))
-            var end :UInt64
+            var end :UInt64 = UInt64.zero
             if CRLF {
-                let cr :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: 0x0d))
+                let cr :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: carrageReturn))
                 let crAdjusted :UInt64 = (cr << 1) | prevIterCrEnd
-                let lf :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: 0x0a))
+                let lf :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
                 end = lf & crAdjusted
                 prevIterCrEnd = cr >> 63
             } else {
-                end = UInt64(cmpMaskAgainstInput(input: input, m: 0x0a))
+                end = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
             }
             // note - a bit of a high-wire act here with quotes
             // we can't put something inside the quotes with the CR
@@ -306,49 +307,126 @@ struct SimdCSV {
             // the quoted bits here. Some other quote convention would
             // need to be thought about carefully
             let fieldSep = (end | sep) & ~quoteMask
-            flatternBits(basePtrRaw: basePtr, base: &base, idx: UInt32(idx), b: fieldSep)
+//            let basePtr: UnsafeMutablePointer<UInt32> = basePtrRaw.assumingMemoryBound(to: UInt32.self)
+
+            flattenBits(basePtr: basePtr, base: &base, idx:idx, b: fieldSep)
+        }
+    }
+    
+    public func dump(loadResult: LoadResult) {
+        if loadResult.status == LoadStatus.OK {
+            let count = loadResult.csv.data!.count
+            loadResult.csv.data?.withUnsafeBytes { rawBufferPointer in
+                let baseAddress :UnsafeRawPointer = rawBufferPointer.baseAddress!
+                let dataPointer = baseAddress.bindMemory(to: CChar.self, capacity: count)
+                for i in 0...loadResult.csv.numberOfIndexes {
+                    print(i, ": ")
+                    let first = loadResult.csv.indexes[i]
+                    let next = loadResult.csv.indexes[i + 1]
+                    let wordCount = Int(next - first)
+                    
+                    var textArray = Array<CChar>.init(repeating: CChar.zero, count: wordCount)
+                    var i = 0
+                    for j in first...next {
+                        let idx = Int(j)
+                        textArray[i] = dataPointer[idx]
+                        i += 1
+                    }
+                    
+                    let text = String.init(utf8String: textArray) ?? ""
+                    print(text)
+                }
+            }
+        } else {
+            print("Printing LoadResult that failed...")
         }
     }
     
     public func loadCSV(filepath :URL, iterations :size_t = 100, verbose:Bool = false) -> LoadResult {
-        let loadResult = LoadResult(status: LoadStatus.OK)
-        var pcsv :ParseCSV = ParseCSV()
-        let evts :[Int32] = [PERF_COUNT_HW_CPU_CYCLES, PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_BRANCH_MISSES, PERF_COUNT_HW_CACHE_REFERENCES, PERF_COUNT_HW_CACHE_MISSES, PERF_COUNT_HW_REF_CPU_CYCLES]
         let ioUtil = IOUtil()
+        if verbose {
+            if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+                os_log("[verbose] loading %s", self.log, filepath as CVarArg)
+            } else {
+            }
+        }
+        
         do {
-            let p :Data = try ioUtil.getCorpus(filepath: filepath, padding: CSV_PADDING)
-            // let size = p.count
-            // pcsv.indexes = Array(repeating: nil, count: size)
-            // if pcsv.indexes.count == 0 {
-            //     os_log("[ERROR] You are running out of memory.")
-            //     return LoadResult(status: LoadStatus.Failed)
-            // }
-            let ta = TimingAccumulator(numPhasesIn:2, configVec: evts)
-            var total :UInt = 0 // naive accumulator
+            let p :Data = try ioUtil.getCorpus(filepath: filepath, padding: SimdCSV.CSV_PADDING)
+            return loadCSV(csv: p, iterations: iterations, verbose: verbose)
+        } catch {
+            if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+                os_log("[ERROR] %@", "\(error).")
+            } else {
+                debugPrint("[ERROR] \(error).")
+            }
+
+            return LoadResult(status: LoadStatus.Failed)
+        }
+    }
+        
+    public func loadCSV(csv :Data, iterations :size_t = 100, verbose:Bool = false) -> LoadResult {
+        let p = csv
+        do {
+            let loadResult = LoadResult(status: LoadStatus.OK)
+            var pcsv :ParseCSV = ParseCSV()
+            pcsv.indexes = UnsafeMutablePointer<UInt32>.allocate(capacity: p.count)
+
+            if (verbose) {
+                let formatter = ByteCountFormatter()
+                formatter.allowedUnits = [.useAll]
+                formatter.countStyle = .file
+                let sizeAsText = formatter.string(fromByteCount: Int64(p.count))
+                if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+                    os_log("[verbose] loaded CSV sized %s", self.log)
+                } else {
+                    debugPrint("[verbose] loaded CSV sized %s", sizeAsText)
+                }
+            }
+#if os(Linux)
+                let events :[Int32] = [PERF_COUNT_HW_CPU_CYCLES, PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_BRANCH_MISSES, PERF_COUNT_HW_CACHE_REFERENCES, PERF_COUNT_HW_CACHE_MISSES, PERF_COUNT_HW_REF_CPU_CYCLES]
+#else
+                let events :[Int32] = []
+#endif
+
+            let timingAccumulator = TimingAccumulator(numPhasesIn:2, configVec: events)
+            var total :Double = 0 // naive accumulator
             p.withUnsafeBytes { rawBufferPointer in
-                let size = rawBufferPointer.count
                 let baseAddress :UnsafeRawPointer = rawBufferPointer.baseAddress!
                 let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
-                pcsv.data = CSVinMemory
+                let len = rawBufferPointer.count
                 for _ in 0...iterations {
-                    let start = clock()
-                    _ = TimingPhase(accIn: ta, phaseIn: 0)
-                    SimdCSV.findIndexes(buf: CSVinMemory, len: size, pcsv: &pcsv)
-                    _ = TimingPhase(accIn:ta, phaseIn: 1)
-                    total += (clock() - start)
+                    let startTime :clock_t = clock()
+                    repeat {
+                        let timinigPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 0)
+                        timinigPhase.start()
+                        SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv)
+                    } while (false)
+                    repeat {
+                        let timingPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 1)
+                        timingPhase.start()
+                    } while (false)
+                    
+                    let endTime = clock()
+                    total += Double(endTime - startTime)
                 }
             }
             
-            let volume = iterations * p.count
-            let timeInS = total / UInt(CLOCKS_PER_SEC)
+            let volume :Double = Double(iterations * p.count)
+            let timeInS :Double = total / Double(CLOCKS_PER_SEC)
             if verbose {
                 if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
                     os_log("[verbose] Total time in (s) %@", self.log, timeInS)
+                    
                     os_log("[verbose] Number of iterations %@", self.log, volume)
+  /*
+                    os_log("[verbose] Number of cycles %@", self.log, cycles)
+
+                    os_log("[verbose] Number of cycles per byte %@", self.log, cycles)
+    */
+                     os_log("[verbose] Number of indexes found: %@", self.log, pcsv.numberOfIndexes)
                     /*
-                      os_log("[verbose] Number of cycles %@", self.log, cycles)
-                     
-                      os_log("[verbose] Number of cycles per byte %@", self.log, cycles)
+                    os_log("[verbose] Number of bytes per index: ", self.log, pcsv.indexes.)
                       os_log("[verbose] Number of cycles (ref) %@", self.log, cycles)
                       os_log("[verbose] Number of cycles (ref) per byte %@", self.log, cycles)
                       os_log("[verbose] Number of instructions %@", self.log, cycles)
@@ -363,10 +441,12 @@ struct SimdCSV {
                       os_log("[verbose] CPU frequency (effective) %@", self.log, cycles)
                       os_log("[verbose] CPU frequency (base) %@", self.log, cycles)
                       */
-                      os_log("[verbose] %@", self.log, "done")
+                      os_log("[info] %@", self.log, "done")
                 } else {
                     // Fallback on earlier versions
                 }
+            } else {
+                timingAccumulator.dump()
             }
             
             return loadResult
@@ -374,8 +454,9 @@ struct SimdCSV {
             if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
                 os_log("[ERROR] %@", "\(error).")
             } else {
-                // Fallback on earlier versions
+                debugPrint("[ERROR] \(error).")
             }
+
             return LoadResult(status: LoadStatus.Failed)
         }
     }

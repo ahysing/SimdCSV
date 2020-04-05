@@ -47,19 +47,30 @@ class TimingAccumulator {
             results[phaseNumber].invalidate()
         }
     }
+    
+    public func dump() {
+        for result in self.results {
+            print(result)
+        }
+    }
 }
 
 
 // a that is designed to start counting on coming into scope and stop counting, putting its results into
 // an Accumulator, when leaving scope. Optional - can just use explicit start/stop
 class TimingPhase {
-    var acc :TimingAccumulator
+    var timingAccumulator :TimingAccumulator
     var phaseNumber :Int
     init(accIn :TimingAccumulator, phaseIn: Int) {
-        self.acc = accIn
+        self.timingAccumulator = accIn
         self.phaseNumber = phaseIn
     }
+
     deinit {
-        acc.stop(phaseNumber: phaseNumber)
+        timingAccumulator.stop(phaseNumber: phaseNumber)
+    }
+    
+    func start() {
+        self.timingAccumulator.start(phaseNumber: phaseNumber)
     }
 }
