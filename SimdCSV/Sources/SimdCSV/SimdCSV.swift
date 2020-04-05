@@ -146,7 +146,7 @@ struct SimdCSV {
     // tell the next iteration whether we finished the final iteration inside a
     // quote pair; if so, this  inverts our behavior of  whether we're inside
     // quotes for the next iteration.
-    private static func findQuoteMask(input :SimdInput, prevIterInsideQuote :inout UInt64) -> UInt64 {
+    internal static func findQuoteMask(input :SimdInput, prevIterInsideQuote :inout UInt64) -> UInt64 {
         let m = comma
         let quoteBits = cmpMaskAgainstInput(input: input, m: m)
 #if arch(x86_64)
@@ -156,12 +156,11 @@ struct SimdCSV {
         // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
         let immediate = simd._mm_mul_epi32(a, b)
         var quoteMask = UInt64(simd._mm_cvtsi128_si64(immediate))
-#elseif arch(arm64)
-        let minusOne :UInt64 = 1
-        var quoteMask :UInt64 = 1
 #else
-        let minusOne :UInt64 = 1
-        var quoteMask :UInt64 = 1 // TODO
+//        #elif defined(__ARM_NEON)
+//          uint64_t quote_mask = vmull_p64( -1ULL, quote_bits);
+//        #endif
+        var quoteMask :UInt64 = UInt64.max * quoteBits
 #endif
         quoteMask ^= prevIterInsideQuote
         // right shift of a signed value expected to be well-defined and standard
