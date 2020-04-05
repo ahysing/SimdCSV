@@ -130,6 +130,20 @@ final class SimdCSVTests: XCTestCase {
         XCTAssertEqual(63, result[63])
     }
     
+    func testFindQuoteMask() {
+        // TODO
+        // Arrange
+        let letters = SIMD64<Int8>()
+        let input = SimdInput(letters: letters)
+        var prevIterInsideQuote = UInt64()
+        
+        // Act
+        let _ = SimdCSV.findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
+        
+        // Assert
+        XCTAssertTrue(true)
+    }
+    
     func testFlatternBits() {
         let values = UnsafeMutablePointer<Int8>.allocate(capacity: 64)
         for value in 0...63 {
@@ -149,6 +163,7 @@ final class SimdCSVTests: XCTestCase {
         ("testCmpMaskAgainstInputIsRepeatingComma", testCmpMaskAgainstInputIsRepeatingComma),
         ("testCmpMaskAgainstInputIsCommaInPosition0", testCmpMaskAgainstInputIsCommaInPosition0),
         ("testCmpMaskAgainstInputIsCommaInPosition0And1", testCmpMaskAgainstInputIsCommaInPosition0And1),
+        ("testFindQuoteMask", testFindQuoteMask),
         ("testFlatternBits", testFlatternBits),
         ("testHasSIMD", testHasSIMD)
     ]
