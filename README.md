@@ -55,4 +55,6 @@ func main() {
 
 ## Contributions
 
-[Andreas Dryer Hysing](https://github.com/ahysing) is the single contributor of this software. If you have suggestions for future versions 
+[Andreas Dreyer Hysing](https://github.com/ahysing) is the single contributor of this software. If you have suggestions for future versions feel free to send a message on [@hysing on Twitter](https://twitter.com/ahysing) or [github](https://github.com/ahysing).
+
+Pull requests are welcomed. If you write propose pull request it should conform with the [Design Principles](docs/principles.md) as they are layed out.
