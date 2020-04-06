@@ -33,8 +33,24 @@ In the example below we are reading the column 1 and 3 from the [Ticks to Ride e
 
 ```Swift
 import SimdCSV
+import os.log
 
-...
+public class MyLoader {
+    private static var subsystem = Bundle.main.bundleIdentifier!
+
+    func load() {
+        let logger =  OSLog(subsystem: subsystem, category: "MyLoader")
+        let simdCSV = SimdCSV.init(log:logger)
+        let fileName = URL(string: "input.csv")
+        let result = simdCSV.loadCSV(fileName)
+        simdCSV.dump(result)
+    }
+}
+
+func main() {
+    let main = Main.init()
+}
+
 ```
 
 ## Contributions
