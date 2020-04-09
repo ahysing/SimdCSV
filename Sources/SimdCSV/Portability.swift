@@ -47,7 +47,7 @@ func countLeadingZerosSwift(input_num :UInt64) -> Int32 {
     return counter
 }
 
-func leadingZeros(input_num :UInt64) -> Int32 {
+func countLeadingZeros(input_num :UInt64) -> Int32 {
     // This function comes builtin with Swift.
     // it is usually backed by hardware instructions.
     // To lear more read about the ARM NEON in the documenttion below
@@ -68,7 +68,7 @@ func countNumberOfBitsSwiftBuiltin(input_num :UInt64) -> UInt32 {
     let result_int = input_num.nonzeroBitCount
     return UInt32(result_int)
 }
-/*
+
 func countNumberOfBitsSwift(input_num :UInt64) -> UInt32 {
     var number = input_num
     var counter = UInt32(0)
@@ -79,7 +79,6 @@ func countNumberOfBitsSwift(input_num :UInt64) -> UInt32 {
     
     return counter
 }
- */
 
 // hamming
 // Fast counting the number of set bits
