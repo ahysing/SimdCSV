@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  LoadResultTests.swift
 //  
 //
 //  Created by Andreas Dreyer Hysing on 29/03/2020.

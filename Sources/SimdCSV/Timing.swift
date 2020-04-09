@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Timing.swift
 //  
 //
 //  Created by Andreas Dreyer Hysing on 28/03/2020.

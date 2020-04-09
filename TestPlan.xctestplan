@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "D496E3FF-5506-47F7-AEAE-5B8B431AFA4F",
+      "name" : "Unit Tests",
+      "options" : {
+        "mallocGuardEdgesEnabled" : true,
+        "nsZombieEnabled" : true,
+        "uiTestingScreenshotsLifetime" : "keepNever"
+      }
+    },
+    {
+      "id" : "04DAF846-AE92-4312-87C9-E8FA442D759A",
+      "name" : "System Tests",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "selectedTests" : [
+        "DumperTests\/testDump()",
+        "DumperTests\/testDumpInMemory_doesNotCrash()"
+      ],
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SimdCSVTests",
+        "name" : "SimdCSVTests"
+      }
+    }
+  ],
+  "version" : 1
+}

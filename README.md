@@ -36,8 +36,8 @@ public class MyLoader {
     func load() {
         let logger =  OSLog(subsystem: subsystem, category: "MyLoader")
         let simdCSV = SimdCSV.init(log:logger)
-        let fileName = URL(string: "input.csv")
-        let result = simdCSV.loadCSV(fileName)
+        let fileName = URL(string: "input.csv")!
+        let result = simdCSV.loadCSV(filepath: fileName)
         simdCSV.dump(result)
     }
 }
