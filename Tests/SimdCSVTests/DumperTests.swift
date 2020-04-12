@@ -8,6 +8,7 @@
 import XCTest
 @testable import SimdCSV
 
+/*
 final class DumperTests: XCTestCase {
     func testDumpInMemory_doesNotCrash() {
         let text = "Header,Header2\n"
@@ -26,12 +27,13 @@ final class DumperTests: XCTestCase {
     }
     
     func testDump() {
-        let simdCSV = SimdCSV.init()
+        let simdCSV = SimdCSV()
         let fileName = URL(string: "Tickets_to_Ride.csv")!
         let result = simdCSV.loadCSV(filepath: fileName)
         let dumper = Dumper.init()
         dumper.dump(loadResult: result)
     }
 }
+ */
 
 #endif

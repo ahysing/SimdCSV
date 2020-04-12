@@ -21,12 +21,12 @@ We try to achieve full architectural coverage for Apple devices. At some point w
 
 The software is limited to the following operating systems.
 
-    * macOS 10.14
-    * iOS 8
-    * tvOS 9
+    * macOS 10.12
+    * iOS 10.0
+    * tvOS 10.0
     * watchOS 3
 
-If you run a newer version of these operating systems your software is supported.
+If you are running on lower versions [os.OSLog](https://developer.apple.com/documentation/os/oslog) will stop working. Instead the application will log to stdout.
 
 ## On Testing
 

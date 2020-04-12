@@ -5,7 +5,7 @@ import XCTest
 @available(tvOS 10.0, watchOS 3.0, iOS 10.0, macOS 10.0, *)
 final class SimdCSVTests: XCTestCase {
     func testCompilerSettings() {
-        XCTAssertTrue(["neon", "x86_64"].contains(SimdCSV().compileSettings))
+        XCTAssertTrue(["neon", "x86_64"].contains(SimdCSV().architecture))
         XCTAssertNotEqual(SimdCSV().hasSIMD, 0)
     }
     
@@ -131,17 +131,31 @@ final class SimdCSVTests: XCTestCase {
     }
     
     func testFindQuoteMask() {
-        // TODO
-        // Arrange
-        let letters = SIMD64<Int8>()
-        let input = SimdInput(letters: letters)
-        var prevIterInsideQuote = UInt64()
+        var inputText = "\"..............................................................."
+        inputText.withUTF8 { unsafeBufferPointerUInt8 in
+            var letters = SIMD64<UInt8>(repeating: 0)
+            for i in 0...unsafeBufferPointerUInt8.count {
+                let byte = unsafeBufferPointerUInt8[i]
+                letters[i] = byte
+            }
+        }
+
         
-        // Act
-        let _ = SimdCSV.findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
+    }
+    
+    func test() {
+        let text = "From,To,Distance,Color,PADDING1\nVacouver,Seattle,1,Grey,PADDING\n" +
+                   "                                                                "
+        let data :Data = text.data(using: .utf8)!
+        let simdCSV = SimdCSV.init()
+
+        let result = simdCSV.loadCSV(csv: data)
         
-        // Assert
-        XCTAssertTrue(true)
+        XCTAssertNotNil(result)
+        let csv = result.csv
+        XCTAssertNotNil(csv)
+        let count = result.csv.indexes.count
+        XCTAssertNotEqual(0, count)
     }
 
     static var allTests = [
