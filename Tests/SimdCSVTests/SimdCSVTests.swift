@@ -221,14 +221,14 @@ final class SimdCSVTests: XCTestCase {
         
         XCTAssertEqual(expected, result)
     }
-    /*
-    func test() {
+    
+    func test_loadCSVData64BitPadded() {
         let text = "From,To,Distance,Color,PADDING1\nVacouver,Seattle,1,Grey,PADDING\n" +
                    "                                                                "
         let data :Data = text.data(using: .utf8)!
         let simdCSV = SimdCSV.init()
 
-        let result = simdCSV.loadCSV(csv: data)
+        let result = simdCSV.loadCSVData64BitPadded(csv: data)
         
         XCTAssertNotNil(result)
         let csv = result.csv
@@ -236,7 +236,6 @@ final class SimdCSVTests: XCTestCase {
         let count = result.csv.indexes.count
         XCTAssertNotEqual(0, count)
     }
- */
 
     static var allTests = [
         ("testCmpMaskAgainstInputIsRepeatingComma", testCmpMaskAgainstInputIsRepeatingComma),

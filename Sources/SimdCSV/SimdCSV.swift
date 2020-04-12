@@ -208,8 +208,8 @@ struct SimdCSV {
     // quote pair; if so, this  inverts our behavior of  whether we're inside
     // quotes for the next iteration.
     @inlinable internal static func findQuoteMask(input :SimdInput, prevIterInsideQuote :inout UInt64) -> UInt64 {
-        let quoteBits = cmpMaskAgainstInput(input: input, m: quote)
-#if arch(x86_64)
+
+// #if arch(x86_64)
         // let quoteBitsInt64 = Int64(bitPattern: quoteBits)
         // let most sigificant int64 be 0. let least significant int64 be quoteBits
         // let factorOne :SIMD2<Int64> = simd._mm_set_epi64x(Int64.zero, quoteBitsInt64)
@@ -222,86 +222,107 @@ struct SimdCSV {
         // let a = carryLessMultiplySigned(factorOne:factorOne, factorTwo: factorTwo) // carryLessMultiply(factorOne: factorOne, factorTwo: factorTwo)
         // Copy the lower 64-bit integer in a to dst.
         // let immediate = simd._mm_cvtsi128_si64(a)
-        var quoteMask = carryLessMultiplyScalar(factorOne: quoteBits, factorTwo: UInt64.max)
-#elseif arch(arm64)
+//#elseif arch(arm64)
         // uint64_t quote_mask = vmull_p64( -1ULL, quote_bits)
         // Polynomial Multiply Long. This instruction multiplies corresponding elements in the lower or upper half of the vectors of the two source SIMD&FP registers, places the results in a vector, and writes the vector to the destination SIMD&FP register. The destination vector elements are twice as long as the elements that are multiplied.
-        var quoteMask = simd.vmull_p64(UInt64.max, quoteBits) // :poly128_t
-#else
+        //#endif
+        let quoteBits = cmpMaskAgainstInput(input: input, m: quote)
         var quoteMask = carryLessMultiplyScalar(factorOne: quoteBits, factorTwo: UInt64.max)
-#endif
         quoteMask ^= prevIterInsideQuote
-        // right shift of a signed value expected to be well-defined and standard
-        // compliant as of C++20,
-        // John Regher from Utah U. says this is fine code
         let quoteMaskInt64 = Int64(bitPattern: quoteMask)
         let quoteMaskInt64Shifted = quoteMaskInt64 >> 63
         prevIterInsideQuote = UInt64(bitPattern: quoteMaskInt64Shifted)
         return quoteMask
     }
   
+    // Flatten out values in 'bits' assuming that they are to have values of idx
+    // plus their position in the bitvector, and store these indexes at
+    // base_ptr[base] incrementing base as we go.
+    //
+    // Will potentially store extra values beyond end of valid bits, so base_ptr
+    // needs to be large enough to handle this
     @inlinable internal static func flattenBits(basePtr :inout [UInt32]!, base :inout Int, idx :size_t, b :UInt64) {
         var bits = b
-        if bits != UInt64.zero {
-            let cntUInt = hamming(input_num: bits)
+        if b != UInt64.zero {
+            var ts:UInt32 = 0
+            let cntUInt = hamming(number: bits)
             let cnt = Int(cntUInt)
             let nextBase = base + cnt
             let one = UInt64(1)
             var immediate :UInt64 = 0
-            basePtr[base + 0] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            let unsignedIdx = UInt32(idx)
+            
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 0] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 1] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 1] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 2] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 2] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 3] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 3] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 4] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 4] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 5] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 5] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 6] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 6] = unsignedIdx + ts
             immediate = UInt64(bits - one)
             bits = bits & immediate
-            basePtr[base + 7] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+            ts = countTrailingZeros(number: bits)
+            basePtr[base + 7] = unsignedIdx + ts
             
             if cnt > 8 {
-                basePtr[base + 8] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                basePtr[base + 8] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 9] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 9] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 10] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 10] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 11] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 11] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 12] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 12] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 13] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 13] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 14] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 14] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
-                basePtr[base + 15] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                ts = countTrailingZeros(number: bits)
+                basePtr[base + 15] = unsignedIdx + ts
                 immediate = UInt64(bits - one)
                 bits = bits & immediate
+                ts = countTrailingZeros(number: bits)
             }
             
             if cnt > 16 {
                 base += 16
                 while bits != 0 {
-                    basePtr[base] = UInt32(idx) + UInt32(trailingZeros(input_num: bits))
+                    ts = countTrailingZeros(number: bits)
+                    basePtr[base] = unsignedIdx + ts
                     immediate = UInt64(bits - one)
                     bits = bits & immediate
                     base = base + 1
@@ -392,15 +413,15 @@ struct SimdCSV {
         }
         
         do {
-            let p :Data = try ioUtil.getCorpus(filepath: filepath, padding: SimdCSV.CSV_PADDING)
-            return loadCSV(csv: p, iterations: iterations, verbose: verbose)
+            let csv :Data = try ioUtil.getCorpus(filepath: filepath, padding: SimdCSV.CSV_PADDING)
+            return loadCSVData64BitPadded(csv: csv, iterations: iterations, verbose: verbose)
         } catch {
             self.log.error("%s", "\(error)" as CVarArg)
             return LoadResult(status: LoadStatus.Failed)
         }
     }
         
-    public func loadCSV(csv :Data, iterations :size_t = 100, verbose:Bool = false) -> LoadResult {
+    public func loadCSVData64BitPadded(csv :Data, iterations :size_t = 100, verbose:Bool = false) -> LoadResult {
         let p = csv
         let loadResult = LoadResult(status: LoadStatus.OK)
         var pcsv :ParseCSV = ParseCSV()
