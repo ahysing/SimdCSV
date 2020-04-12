@@ -228,13 +228,14 @@ final class SimdCSVTests: XCTestCase {
         let data :Data = text.data(using: .utf8)!
         let simdCSV = SimdCSV.init()
 
-        let result = simdCSV.loadCSVData64BitPadded(csv: data)
+        let result = simdCSV.loadCSVData64BitPadded(csv: data, verbose: true)
         
         XCTAssertNotNil(result)
         let csv = result.csv
         XCTAssertNotNil(csv)
-        let count = result.csv.indexes.count
-        XCTAssertNotEqual(0, count)
+        XCTAssertNotNil(csv.indexes)
+        let count = result.csv.numberOfIndexes
+        XCTAssertEqual(10, count)
     }
 
     static var allTests = [

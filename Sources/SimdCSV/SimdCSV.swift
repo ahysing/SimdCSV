@@ -241,90 +241,106 @@ struct SimdCSV {
     //
     // Will potentially store extra values beyond end of valid bits, so base_ptr
     // needs to be large enough to handle this
-    @inlinable internal static func flattenBits(basePtr :inout [UInt32]!, base :inout Int, idx :size_t, b :UInt64) {
-        var bits = b
-        if b != UInt64.zero {
-            var ts:UInt32 = 0
-            let cntUInt = hamming(number: bits)
+    @inlinable internal static func flattenBits(basePtr :inout [UInt32]!, base :inout Int, idx :size_t, bits :UInt64) {
+        var buff = bits
+        if bits != UInt64.zero {
+            var columnBoundaries :UInt32 = 0
+            let cntUInt = countColumnBoundariesFromBitMask(number: buff)
             let cnt = Int(cntUInt)
             let nextBase = base + cnt
             let one = UInt64(1)
             var immediate :UInt64 = 0
             let unsignedIdx = UInt32(idx)
             
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 0] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 1] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 2] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 3] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 4] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 5] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 6] = unsignedIdx + ts
-            immediate = UInt64(bits - one)
-            bits = bits & immediate
-            ts = countTrailingZeros(number: bits)
-            basePtr[base + 7] = unsignedIdx + ts
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 0] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 1] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 2] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 3] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 4] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 5] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 6] = unsignedIdx + columnBoundaries
+            immediate = buff.subtractingReportingOverflow(one).partialValue
+            buff = buff & immediate
+            
+            columnBoundaries = countTrailingZeros(number: buff)
+            basePtr[base + 7] = unsignedIdx + columnBoundaries
             
             if cnt > 8 {
-                basePtr[base + 8] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 9] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 10] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 11] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 12] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 13] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 14] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
-                basePtr[base + 15] = unsignedIdx + ts
-                immediate = UInt64(bits - one)
-                bits = bits & immediate
-                ts = countTrailingZeros(number: bits)
+                basePtr[base + 8] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 9] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 10] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 11] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 12] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 13] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 14] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
+                basePtr[base + 15] = unsignedIdx + columnBoundaries
+                immediate = buff.subtractingReportingOverflow(one).partialValue
+                buff = buff & immediate
+                
+                columnBoundaries = countTrailingZeros(number: buff)
             }
             
             if cnt > 16 {
                 base += 16
-                while bits != 0 {
-                    ts = countTrailingZeros(number: bits)
-                    basePtr[base] = unsignedIdx + ts
-                    immediate = UInt64(bits - one)
-                    bits = bits & immediate
+                while buff != UInt64.zero {
+                    columnBoundaries = countTrailingZeros(number: buff)
+                    basePtr[base] = unsignedIdx + columnBoundaries
+                    immediate = buff.subtractingReportingOverflow(one).partialValue
+                    buff = buff & immediate
+                    
                     base = base + 1
                 }
             }
@@ -339,7 +355,6 @@ struct SimdCSV {
         var prevIterCrEnd = UInt64.zero
         
         let lenminus64 :size_t = len < 64 ? 0 : len - 64
-        var basePtr: [UInt32]? = pcsv.indexes!
         var base :Int = 0
         // #ifdef SIMDCSV_BUFFERING
 
@@ -353,18 +368,18 @@ struct SimdCSV {
                 for b in 0...SIMDCSV_BUFFERSIZE {
                     let internalIdx :size_t = 64 * b + idx
                     let bufWithOffset = buf + internalIdx
-                    let input = fillInput(ptr: bufWithOffset)
-                    let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
-                    let sep = cmpMaskAgainstInput(input: input, m: comma)
+                    let simdInput = fillInput(ptr: bufWithOffset)
+                    let quoteMask = findQuoteMask(input: simdInput, prevIterInsideQuote: &prevIterInsideQuote)
+                    let sep = cmpMaskAgainstInput(input: simdInput, m: comma)
                     var end :UInt64 = UInt64.zero
                     if CRLF {
-                        let cr :UInt64 = cmpMaskAgainstInput(input: input, m: carrageReturn)
+                        let cr :UInt64 = cmpMaskAgainstInput(input: simdInput, m: carrageReturn)
                         let crAdjusted :UInt64 = (cr << 1) | prevIterCrEnd
-                        let lf :UInt64 = cmpMaskAgainstInput(input: input, m: lineFeed)
+                        let lf :UInt64 = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
                         end = (lf & crAdjusted)
                         prevIterCrEnd = cr >> 63
                     } else {
-                        end = cmpMaskAgainstInput(input: input, m: lineFeed)
+                        end = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
                     }
                     
                     fields[b] = (end | sep) & ~quoteMask
@@ -372,29 +387,29 @@ struct SimdCSV {
                 
                 for b in 0...SIMDCSV_BUFFERSIZE {
                     let internalIdx :size_t = 64 * b + idx
-                    flattenBits(basePtr: &basePtr, base: &base, idx: internalIdx, b: fields[b])
+                    flattenBits(basePtr: &pcsv.indexes, base: &base, idx: internalIdx, bits: fields[b])
                 }
                 
                 globalIdx = idx
             }
-            
-            pcsv.numberOfIndexes = base
         }
         
         // tail end will be unbuffered
         for idx in stride(from: 0, to: lenminus64, by: 64) {
-            let input = fillInput(ptr:buf + idx)
-            let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
-            let sep = cmpMaskAgainstInput(input: input, m: comma)
+            let bufWithOffset = buf + idx
+            
+            let simdInput = fillInput(ptr:bufWithOffset)
+            let quoteMask = findQuoteMask(input: simdInput, prevIterInsideQuote: &prevIterInsideQuote)
+            let sep = cmpMaskAgainstInput(input: simdInput, m: comma)
             var end :UInt64 = UInt64.zero
             if CRLF {
-                let cr :UInt64 = cmpMaskAgainstInput(input: input, m: carrageReturn)
+                let cr :UInt64 = cmpMaskAgainstInput(input: simdInput, m: carrageReturn)
                 let crAdjusted :UInt64 = (cr << 1) | prevIterCrEnd
-                let lf :UInt64 = cmpMaskAgainstInput(input: input, m: lineFeed)
+                let lf :UInt64 = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
                 end = lf & crAdjusted
                 prevIterCrEnd = cr >> 63
             } else {
-                end = cmpMaskAgainstInput(input: input, m: lineFeed)
+                end = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
             }
             // note - a bit of a high-wire act here with quotes
             // we can't put something inside the quotes with the CR
@@ -402,11 +417,13 @@ struct SimdCSV {
             // the quoted bits here. Some other quote convention would
             // need to be thought about carefully
             let fieldSep = (end | sep) & ~quoteMask
-            flattenBits(basePtr: &basePtr, base: &base, idx:idx, b: fieldSep)
+            flattenBits(basePtr: &pcsv.indexes, base: &base, idx:idx, bits: fieldSep)
         }
+        
+        pcsv.numberOfIndexes = base
     }
     
-    public func loadCSV(filepath :URL, iterations :size_t = 100, verbose:Bool = false) -> LoadResult {
+    public func loadCSV(filepath :URL, verbose:Bool = false) -> LoadResult {
         let ioUtil = IOUtil()
         if verbose {
             self.log.debug("loading %s", "\(filepath)" as CVarArg)
@@ -414,25 +431,30 @@ struct SimdCSV {
         
         do {
             let csv :Data = try ioUtil.getCorpus(filepath: filepath, padding: SimdCSV.CSV_PADDING)
-            return loadCSVData64BitPadded(csv: csv, iterations: iterations, verbose: verbose)
+            return loadCSVData64BitPadded(csv: csv, verbose: verbose)
         } catch {
             self.log.error("%s", "\(error)" as CVarArg)
             return LoadResult(status: LoadStatus.Failed)
         }
     }
+    
+    internal func formatByteCount(count :Int) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useAll]
+        formatter.countStyle = .file
+        let byteCount = Int64(count)
+        let sizeAsText = formatter.string(fromByteCount: byteCount)
+        return sizeAsText
+    }
         
-    public func loadCSVData64BitPadded(csv :Data, iterations :size_t = 100, verbose:Bool = false) -> LoadResult {
+    public func loadCSVData64BitPadded(csv :Data, verbose:Bool = false) -> LoadResult {
         let p = csv
         let loadResult = LoadResult(status: LoadStatus.OK)
         var pcsv :ParseCSV = ParseCSV()
-        // pcsv.indexes = UnsafeMutablePointer<UInt32>.allocate(capacity: p.count)
         pcsv.indexes = Array<UInt32>.init(repeating: UInt32.zero, count: p.count)
         if (verbose) {
-            let formatter = ByteCountFormatter()
-            formatter.allowedUnits = [.useAll]
-            formatter.countStyle = .file
-            let sizeAsText = formatter.string(fromByteCount: Int64(p.count))
-            self.log.debug("loaded CSV sized %s", sizeAsText as CVarArg)
+            let sizeAsText = formatByteCount(count: p.count)
+            self.log.debug("loaded CSV sized ", sizeAsText)
         }
 #if os(Linux)
         let events :[Int32] = [PERF_COUNT_HW_CPU_CYCLES, PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_BRANCH_MISSES, PERF_COUNT_HW_CACHE_REFERENCES, PERF_COUNT_HW_CACHE_MISSES, PERF_COUNT_HW_REF_CPU_CYCLES]
@@ -446,29 +468,25 @@ struct SimdCSV {
             let baseAddress :UnsafeRawPointer = rawBufferPointer.baseAddress!
             let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
             let len = rawBufferPointer.count
-            for _ in 0...iterations {
-                let startTime :clock_t = clock()
-                repeat {
-                    let timinigPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 0)
-                    timinigPhase.start()
-                    SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv)
-                } while (false)
-                repeat {
-                    let timingPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 1)
-                    timingPhase.start()
-                } while (false)
-                
-                let endTime = clock()
-                total += Double(endTime - startTime)
-            }
+        
+            let startTime :clock_t = clock()
+            repeat {
+                let timinigPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 0)
+                timinigPhase.start()
+                SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv)
+            } while (false)
+            repeat {
+                let timingPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 1)
+                timingPhase.start()
+            } while (false)
+            
+            let endTime = clock()
+            total += Double(endTime - startTime)
         }
         
-        let volume :Double = Double(iterations * p.count)
         let timeInS :Double = total / Double(CLOCKS_PER_SEC)
         if verbose {
-            self.log.debug("Total time in (s) %@", timeInS as CVarArg)
-            
-            self.log.debug("Number of iterations %@", volume)
+            self.log.debug("Total time in (s) %@", timeInS)
 /*
             os_log("[verbose] Number of cycles %@", self.log, cycles)
 
@@ -496,17 +514,6 @@ struct SimdCSV {
             timingAccumulator.dump()
         }
         
-        return loadResult
-        /*
-        } catch {
-            if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-                os_log("[ERROR] \(error).")
-            } else {
-                print("[ERROR] \(error).")
-            }
-
-            return LoadResult(status: LoadStatus.Failed)
-        }
- */
+        return LoadResult(status: LoadStatus.OK, csv: pcsv)
     }
 }

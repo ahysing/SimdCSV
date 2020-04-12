@@ -12,7 +12,7 @@ final class PortabilityTests: XCTestCase {
     func testHamming() {
         let number :UInt64 = 0
         
-        let result = hamming(number: number)
+        let result = countColumnBoundariesFromBitMask(number: number)
         
         XCTAssertEqual(0, result)
     }
@@ -20,7 +20,7 @@ final class PortabilityTests: XCTestCase {
     func testHammingInputIs1() {
         let number :UInt64 = 1
         
-        let result = hamming(number: number)
+        let result = countColumnBoundariesFromBitMask(number: number)
         
         XCTAssertEqual(1, result)
     }
@@ -28,7 +28,7 @@ final class PortabilityTests: XCTestCase {
     func testHammingInputIs2() {
         let number :UInt64 = 2
         
-        let result = hamming(number: number)
+        let result = countColumnBoundariesFromBitMask(number: number)
         
         XCTAssertEqual(1, result)
     }
@@ -36,7 +36,7 @@ final class PortabilityTests: XCTestCase {
     func testHammingInputIs3() {
         let number :UInt64 = 3
         
-        let result = hamming(number: number)
+        let result = countColumnBoundariesFromBitMask(number: number)
         
         XCTAssertEqual(2, result)
     }

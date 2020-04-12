@@ -80,10 +80,10 @@ func countNumberOfBitsSwift(number :UInt64) -> UInt32 {
     return counter
 }
 
-// hamming
+// countColumnBoundariesFromBitMask
 // Fast counting the number of set bits
 // number: the input number to count bits in
-func hamming(number :UInt64) -> UInt32 {
+func countColumnBoundariesFromBitMask(number :UInt64) -> UInt32 {
 // #if arch(x86_64)
 //     let result = simd.__popcntq(number)
 //     return UInt32(result)
