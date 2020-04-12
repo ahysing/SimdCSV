@@ -15,7 +15,7 @@ protocol TimingPhase {
     func stop()
 }
 
-@available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
+@available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
 class OSTimingPhase : TimingPhase {
     private let category :StaticString
     private let log :os.OSLog

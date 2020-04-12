@@ -423,7 +423,7 @@ struct SimdCSV {
         pcsv.numberOfIndexes = base
     }
     
-    public func loadCSV(filepath :URL, verbose:Bool = false) -> LoadResult {
+    public func loadCSV(filepath :URL, CRLF:Bool = false, verbose:Bool = false) -> LoadResult {
         let ioUtil = IOUtil()
         if verbose {
             self.log.debug("loading %s", "\(filepath)" as CVarArg)
@@ -431,7 +431,7 @@ struct SimdCSV {
         
         do {
             let csv :Data = try ioUtil.getCorpus(filepath: filepath, padding: SimdCSV.CSV_PADDING)
-            return loadCSVData64BitPadded(csv: csv, verbose: verbose)
+            return loadCSVData64BitPadded(csv: csv, CRLF:CRLF, verbose: verbose)
         } catch {
             self.log.error("%s", "\(error)" as CVarArg)
             return LoadResult(status: LoadStatus.Failed)
@@ -447,7 +447,7 @@ struct SimdCSV {
         return sizeAsText
     }
         
-    public func loadCSVData64BitPadded(csv :Data, verbose:Bool = false) -> LoadResult {
+    public func loadCSVData64BitPadded(csv :Data, CRLF:Bool = false, verbose:Bool = false) -> LoadResult {
         let p = csv
         var pcsv :ParseCSV = ParseCSV()
         pcsv.indexes = Array<UInt32>.init(repeating: UInt32.zero, count: p.count)
@@ -462,13 +462,13 @@ struct SimdCSV {
             let len = rawBufferPointer.count
         
             var timingPhase :TimingPhase
-            if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+            if #available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *) {
                 timingPhase = OSTimingPhase(category: "Find indexes", log: self.log as! AppToOSLog)
             } else {
                 timingPhase = PosixTimingPhase(category: "Find indexes", log: self.log)
             }
             timingPhase.start()
-            SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv)
+            SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv, CRLF: CRLF)
             timingPhase.stop()
         }
         
