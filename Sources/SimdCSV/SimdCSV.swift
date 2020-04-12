@@ -6,52 +6,9 @@
 //
 import Foundation
 import simd
-import os.log
-
-#if arch(x86_64)
-import _Builtin_intrinsics.intel
-#warning("Imported Intel Intrinsics. Now we are playing with Intel SSE :)")
-#endif
-
-// What are the compile targets available?
-//
-// https://stackoverflow.com/questions/15036909/clang-how-to-list-supported-target-architectures#18576360
-// https://en.wikipedia.org/wiki/Apple-designed_processors#Apple_S5
-#if arch(arm64)
-import _Builtin_intrinsics.arm
-#warning("Imported ARM Intrinsics for ARM64. Now we are playing with ARM neon :)")
-#endif
-
-#if arch(arm)
-import _Builtin_intrinsics.arm
-#warning("Imported ARM Intrinsics for ARM7 and ARM8. Now we are playing with ARM neon :)")
-#endif
-
-
-private let PERF_COUNT_HW_CPU_CYCLES :Int32 = 1
-private let PERF_COUNT_HW_INSTRUCTIONS :Int32 = 2
-private let PERF_COUNT_HW_BRANCH_MISSES :Int32 = 4
-private let PERF_COUNT_HW_CACHE_REFERENCES :Int32 = 8
-private let PERF_COUNT_HW_CACHE_MISSES :Int32 = 16
-private let PERF_COUNT_HW_REF_CPU_CYCLES :Int32 = 32
-
-@available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-func createOSLog() -> Any {
-    return OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV") as Any
-}
 
 struct SimdCSV {
-#if arch(x86_64)
-    public let architecture = "x86_64"
-#elseif arch(arm64)
-    public let architecture = "arm64"
-#elseif arch(arm)
-    public let architecture = "arm"
-#else
-    public let architecture = ""
-#endif
-    public let hasSIMD = SIMD_COMPILER_HAS_REQUIRED_FEATURES
-    
+
     fileprivate static let CSV_PADDING :size_t = 64
     fileprivate static let quote = Array("\"".utf8)[0]
     fileprivate static let comma = Array(",".utf8)[0]
