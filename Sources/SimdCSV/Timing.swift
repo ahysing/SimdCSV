@@ -16,17 +16,17 @@ protocol TimingPhase {
 }
 
 @available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
-class OSTimingPhase : TimingPhase {
-    private let category :StaticString
-    private let log :os.OSLog
-    private let signpostID :OSSignpostID
-    
-    required init(category: StaticString, log :AppToOSLog) {
+class OSTimingPhase: TimingPhase {
+    private let category: StaticString
+    private let log: os.OSLog
+    private let signpostID: OSSignpostID
+
+    required init(category: StaticString, log: AppToOSLog) {
         self.log = log.log
         self.category = category
         self.signpostID = OSSignpostID(log: log.log)
     }
-    
+
     func start() {
         os_signpost(
             .begin,
@@ -34,7 +34,7 @@ class OSTimingPhase : TimingPhase {
             name: self.category,
             signpostID: self.signpostID)
     }
-    
+
     func stop() {
         os_signpost(
             .end,
@@ -44,18 +44,18 @@ class OSTimingPhase : TimingPhase {
     }
 }
 
-class PosixTimingPhase : TimingPhase {
-    public var startedAt :clock_t
-    public var stoppedAt :clock_t
-    private let category :StaticString
-    private let log :AppLogger
-    init(category :StaticString, log :AppLogger = StdOutLog()) {
+class PosixTimingPhase: TimingPhase {
+    public var startedAt: clock_t
+    public var stoppedAt: clock_t
+    private let category: StaticString
+    private let log: AppLogger
+    init(category: StaticString, log: AppLogger = StdOutLog()) {
         self.log = log
         self.category = category
         self.startedAt = 0 as clock_t
         self.stoppedAt = 0 as clock_t
     }
-    
+
     func start() {
         self.startedAt = clock()
     }

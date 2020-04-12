@@ -8,5 +8,5 @@
 import simd
 
 struct SimdInput {
-    var letters :SIMD64<UInt8>
+    var letters: SIMD64<UInt8>
 }
