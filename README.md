@@ -3,7 +3,7 @@
 SimdCSV for Swift. Delivering the fastest way to read comma separated values (csv) in Swift code.
 All CSV defined by [RFC 4180](https://tools.ietf.org/html/rfc4180).
 
-Why would anyone use a custom CSV parser when Swift comes with alternatives built in? Because SimdCSV is the fastest, most energy efficient CSV parser out there. In addition the tape format, SimdCSV uses to represent the data is highly memory efficiant and supports [Memory-mapped I/O](https://en.wikipedia.org/wiki/Memory-mapped_I/O).
+Why would anyone use a custom CSV parser when Swift comes with alternatives built in? Because SimdCSV is the fastest, most energy efficient CSV parser out there. In addition the tape format, SimdCSV uses to represent the data is highly memory efficient.
 
 The gist of it is that SimdCSV for Swift is not your ordinary parser. If machine efficiency is a key priority then SimdCSV for Swift is the right choice for you.
 

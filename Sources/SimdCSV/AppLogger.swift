@@ -17,7 +17,7 @@ protocol AppLogger {
 
 @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
 class AppToOSLog : AppLogger {
-    fileprivate var log :os.OSLog
+    internal var log :os.OSLog
     init(logger :os.OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")
     ) {
         self.log = logger

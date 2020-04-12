@@ -449,45 +449,31 @@ struct SimdCSV {
         
     public func loadCSVData64BitPadded(csv :Data, verbose:Bool = false) -> LoadResult {
         let p = csv
-        let loadResult = LoadResult(status: LoadStatus.OK)
         var pcsv :ParseCSV = ParseCSV()
         pcsv.indexes = Array<UInt32>.init(repeating: UInt32.zero, count: p.count)
         if (verbose) {
             let sizeAsText = formatByteCount(count: p.count)
             self.log.debug("loaded CSV sized ", sizeAsText)
         }
-#if os(Linux)
-        let events :[Int32] = [PERF_COUNT_HW_CPU_CYCLES, PERF_COUNT_HW_INSTRUCTIONS, PERF_COUNT_HW_BRANCH_MISSES, PERF_COUNT_HW_CACHE_REFERENCES, PERF_COUNT_HW_CACHE_MISSES, PERF_COUNT_HW_REF_CPU_CYCLES]
-#else
-        let events :[Int32] = []
-#endif
 
-        let timingAccumulator = TimingAccumulator(numPhasesIn:2, configVec: events)
-        var total :Double = 0 // naive accumulator
         p.withUnsafeBytes { rawBufferPointer in
             let baseAddress :UnsafeRawPointer = rawBufferPointer.baseAddress!
             let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
             let len = rawBufferPointer.count
         
-            let startTime :clock_t = clock()
-            repeat {
-                let timinigPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 0)
-                timinigPhase.start()
-                SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv)
-            } while (false)
-            repeat {
-                let timingPhase = TimingPhase(accIn: timingAccumulator, phaseIn: 1)
-                timingPhase.start()
-            } while (false)
-            
-            let endTime = clock()
-            total += Double(endTime - startTime)
+            var timingPhase :TimingPhase
+            if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
+                timingPhase = OSTimingPhase(category: "Find indexes", log: self.log as! AppToOSLog)
+            } else {
+                timingPhase = PosixTimingPhase(category: "Find indexes", log: self.log)
+            }
+            timingPhase.start()
+            SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv)
+            timingPhase.stop()
         }
         
-        let timeInS :Double = total / Double(CLOCKS_PER_SEC)
         if verbose {
-            self.log.debug("Total time in (s) %@", timeInS)
-/*
+        /*
             os_log("[verbose] Number of cycles %@", self.log, cycles)
 
             os_log("[verbose] Number of cycles per byte %@", self.log, cycles)
@@ -510,8 +496,6 @@ struct SimdCSV {
               os_log("[verbose] CPU frequency (base) %@", self.log, cycles)
               */
             self.log.info("done")            
-        } else {
-            timingAccumulator.dump()
         }
         
         return LoadResult(status: LoadStatus.OK, csv: pcsv)

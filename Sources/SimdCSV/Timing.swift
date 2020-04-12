@@ -6,71 +6,63 @@
 //
 
 import Foundation
-
-class TimingAccumulator {
-    public var results :[Timer] = []
-    private var working :Bool = true
-    init(numPhasesIn: Int, configVec :[Int32]) {
-        results = Array(repeating: Timer.init(), count: numPhasesIn)
-    }
-    
-    deinit {
-    }
-    
-    private func reportError(context :String) {
-        if self.working {
-            // Create a file handle to work with
-            let stderr = FileHandle.standardError
-            // Write it
-            let data = (context.data(using: .utf8, allowLossyConversion: true) ?? Data.init(base64Encoded: ""))!
-            stderr.write(data)
-        }
-        working = false;
-    }
-    
-    public func start(phaseNumber :Int) {
-        let timer = Timer.scheduledTimer(timeInterval: 0.01, target: self, selector: #selector(eventWith(timer:)), userInfo: nil, repeats: true)
-
-        if phaseNumber < results.count && phaseNumber > 0 {
-            results[phaseNumber] = timer
-        }
-    }
-    
-    // Timer expects @objc selector
-    @objc func eventWith(timer: Timer!) {
-        let info = timer.userInfo as Any
-        print(info)
-    }
-    
-    public func stop(phaseNumber :Int) {
-        if phaseNumber < results.count && phaseNumber > 0 {
-            results[phaseNumber].invalidate()
-        }
-    }
-    
-    public func dump() {
-        for result in self.results {
-            print(result)
-        }
-    }
-}
-
+import os.signpost
 
 // a that is designed to start counting on coming into scope and stop counting, putting its results into
 // an Accumulator, when leaving scope. Optional - can just use explicit start/stop
-class TimingPhase {
-    var timingAccumulator :TimingAccumulator
-    var phaseNumber :Int
-    init(accIn :TimingAccumulator, phaseIn: Int) {
-        self.timingAccumulator = accIn
-        self.phaseNumber = phaseIn
-    }
+protocol TimingPhase {
+    func start()
+    func stop()
+}
 
-    deinit {
-        timingAccumulator.stop(phaseNumber: phaseNumber)
+@available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
+class OSTimingPhase : TimingPhase {
+    private let category :StaticString
+    private let log :os.OSLog
+    private let signpostID :OSSignpostID
+    
+    required init(category: StaticString, log :AppToOSLog) {
+        self.log = log.log
+        self.category = category
+        self.signpostID = OSSignpostID(log: log.log)
     }
     
     func start() {
-        self.timingAccumulator.start(phaseNumber: phaseNumber)
+        os_signpost(
+            .begin,
+            log: log,
+            name: self.category,
+            signpostID: self.signpostID)
+    }
+    
+    func stop() {
+        os_signpost(
+            .end,
+            log: log,
+            name: self.category,
+            signpostID: self.signpostID)
+    }
+}
+
+class PosixTimingPhase : TimingPhase {
+    public var startedAt :clock_t
+    public var stoppedAt :clock_t
+    private let category :StaticString
+    private let log :AppLogger
+    init(category :StaticString, log :AppLogger = StdOutLog()) {
+        self.log = log
+        self.category = category
+        self.startedAt = 0 as clock_t
+        self.stoppedAt = 0 as clock_t
+    }
+    
+    func start() {
+        self.startedAt = clock()
+    }
+
+    func stop() {
+        self.stoppedAt = clock()
+        let duration = self.stoppedAt - self.stoppedAt
+        self.log.info(self.category," Spent ", duration, " ms")
     }
 }

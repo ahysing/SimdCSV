@@ -9,7 +9,7 @@
 import XCTest
 import Foundation
 @testable import SimdCSV
-
+/*
 final class IOUtilTests: XCTestCase {
     func testGetCorpusFromBundledCSV() {
         let ioUtil = IOUtil()
@@ -31,6 +31,7 @@ final class IOUtilTests: XCTestCase {
     static var allTests = [
         ("testGetCorpusFromBundledCSV", testGetCorpusFromBundledCSV)
     ]
-}
 
+}
+ */
 #endif // !os(watchOS)
