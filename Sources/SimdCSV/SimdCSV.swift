@@ -53,9 +53,10 @@ struct SimdCSV {
     public let hasSIMD = SIMD_COMPILER_HAS_REQUIRED_FEATURES
     
     fileprivate static let CSV_PADDING :size_t = 64
-    fileprivate static let comma :Int8 = Int8(Array(",".utf8)[0])
-    fileprivate static let carrageReturn :Int8 = 0x0d
-    fileprivate static let lineFeed :Int8 = 0x0a
+    fileprivate static let quote = Array("\"".utf8)[0]
+    fileprivate static let comma = Array(",".utf8)[0]
+    fileprivate static let carrageReturn :UInt8 = 0x0d
+    fileprivate static let lineFeed :UInt8 = 0x0a
     public var log :AppLogger
     @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
     init(osLogger :AppToOSLog) {
@@ -75,121 +76,170 @@ struct SimdCSV {
     }
     
     @inlinable internal static func fillInput(ptr :UnsafeRawPointer!) -> SimdInput {
-        let values :UnsafePointer<Int8> = ptr.bindMemory(to: Int8.self, capacity: 64)
-        let letters = SIMD64<Int8>(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31], values[32], values[33], values[34], values[35], values[36], values[37], values[38], values[39], values[40], values[41], values[42], values[43], values[44], values[45], values[46], values[47], values[48], values[49], values[50], values[51], values[52], values[53], values[54], values[55], values[56], values[57], values[58], values[59], values[60], values[61], values[62], values[63])
+        let values :UnsafePointer<UInt8> = ptr.bindMemory(to: UInt8.self, capacity: 64)
+        let letters = SIMD64<UInt8>(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31], values[32], values[33], values[34], values[35], values[36], values[37], values[38], values[39], values[40], values[41], values[42], values[43], values[44], values[45], values[46], values[47], values[48], values[49], values[50], values[51], values[52], values[53], values[54], values[55], values[56], values[57], values[58], values[59], values[60], values[61], values[62], values[63])
         let input = SimdInput(letters: letters)
         return input
     }
 
     // a straightforward comparison of a mask against input. Would be
     // cheaper in AVX512.
-    @inlinable internal static func cmpMaskAgainstInput(input :SimdInput, m :Int8) -> UInt64 {
+    @inlinable internal static func cmpMaskAgainstInput(input :SimdInput, m :UInt8) -> UInt64 {
         let compareLetters :SIMDMask<SIMD64<Int8>> = input.letters .== m
         var result = SIMD64<Int8>.zero
         result.replace(with: 1, where: compareLetters)
         var bitmaskForM = UInt64(result[0])
-             bitmaskForM |= (UInt64(result[1]) << 1)
-             bitmaskForM |= (UInt64(result[2]) << 2)
-             bitmaskForM |= (UInt64(result[3]) << 3)
-             bitmaskForM |= (UInt64(result[4]) << 4)
-             bitmaskForM |= (UInt64(result[5]) << 5)
-             bitmaskForM |= (UInt64(result[6]) << 6)
-             bitmaskForM |= (UInt64(result[7]) << 7)
-             bitmaskForM |= (UInt64(result[8]) << 8)
-             bitmaskForM |= (UInt64(result[9]) << 9)
-             bitmaskForM |= (UInt64(result[10]) << 10)
-             bitmaskForM |= (UInt64(result[11]) << 11)
-             bitmaskForM |= (UInt64(result[12]) << 12)
-             bitmaskForM |= (UInt64(result[13]) << 13)
-             bitmaskForM |= (UInt64(result[14]) << 14)
-             bitmaskForM |= (UInt64(result[15]) << 15)
-             bitmaskForM |= (UInt64(result[16]) << 16)
-             bitmaskForM |= (UInt64(result[17]) << 17)
-             bitmaskForM |= (UInt64(result[18]) << 18)
-             bitmaskForM |= (UInt64(result[19]) << 19)
-             bitmaskForM |= (UInt64(result[20]) << 20)
-             bitmaskForM |= (UInt64(result[21]) << 21)
-             bitmaskForM |= (UInt64(result[22]) << 22)
-             bitmaskForM |= (UInt64(result[23]) << 23)
-             bitmaskForM |= (UInt64(result[24]) << 24)
-             bitmaskForM |= (UInt64(result[25]) << 25)
-             bitmaskForM |= (UInt64(result[26]) << 26)
-             bitmaskForM |= (UInt64(result[27]) << 27)
-             bitmaskForM |= (UInt64(result[28]) << 28)
-             bitmaskForM |= (UInt64(result[29]) << 29)
-             bitmaskForM |= (UInt64(result[30]) << 30)
-             bitmaskForM |= (UInt64(result[31]) << 31)
-             bitmaskForM |= (UInt64(result[32]) << 32)
-             bitmaskForM |= (UInt64(result[33]) << 33)
-             bitmaskForM |= (UInt64(result[34]) << 34)
-             bitmaskForM |= (UInt64(result[35]) << 35)
-             bitmaskForM |= (UInt64(result[36]) << 36)
-             bitmaskForM |= (UInt64(result[37]) << 37)
-             bitmaskForM |= (UInt64(result[38]) << 38)
-             bitmaskForM |= (UInt64(result[39]) << 39)
-             bitmaskForM |= (UInt64(result[40]) << 40)
-             bitmaskForM |= (UInt64(result[41]) << 41)
-             bitmaskForM |= (UInt64(result[42]) << 42)
-             bitmaskForM |= (UInt64(result[43]) << 43)
-             bitmaskForM |= (UInt64(result[44]) << 44)
-             bitmaskForM |= (UInt64(result[45]) << 45)
-             bitmaskForM |= (UInt64(result[46]) << 46)
-             bitmaskForM |= (UInt64(result[47]) << 47)
-             bitmaskForM |= (UInt64(result[48]) << 48)
-             bitmaskForM |= (UInt64(result[49]) << 49)
-             bitmaskForM |= (UInt64(result[50]) << 50)
-             bitmaskForM |= (UInt64(result[51]) << 51)
-             bitmaskForM |= (UInt64(result[52]) << 52)
-             bitmaskForM |= (UInt64(result[53]) << 53)
-             bitmaskForM |= (UInt64(result[54]) << 54)
-             bitmaskForM |= (UInt64(result[55]) << 55)
-             bitmaskForM |= (UInt64(result[56]) << 56)
-             bitmaskForM |= (UInt64(result[57]) << 57)
-             bitmaskForM |= (UInt64(result[58]) << 58)
-             bitmaskForM |= (UInt64(result[59]) << 59)
-             bitmaskForM |= (UInt64(result[60]) << 60)
-             bitmaskForM |= (UInt64(result[61]) << 61)
-             bitmaskForM |= (UInt64(result[62]) << 62)
-             bitmaskForM |= (UInt64(result[63]) << 63)
+            bitmaskForM |= (UInt64(result[1]) << 1)
+            bitmaskForM |= (UInt64(result[2]) << 2)
+            bitmaskForM |= (UInt64(result[3]) << 3)
+            bitmaskForM |= (UInt64(result[4]) << 4)
+            bitmaskForM |= (UInt64(result[5]) << 5)
+            bitmaskForM |= (UInt64(result[6]) << 6)
+            bitmaskForM |= (UInt64(result[7]) << 7)
+            bitmaskForM |= (UInt64(result[8]) << 8)
+            bitmaskForM |= (UInt64(result[9]) << 9)
+            bitmaskForM |= (UInt64(result[10]) << 10)
+            bitmaskForM |= (UInt64(result[11]) << 11)
+            bitmaskForM |= (UInt64(result[12]) << 12)
+            bitmaskForM |= (UInt64(result[13]) << 13)
+            bitmaskForM |= (UInt64(result[14]) << 14)
+            bitmaskForM |= (UInt64(result[15]) << 15)
+            bitmaskForM |= (UInt64(result[16]) << 16)
+            bitmaskForM |= (UInt64(result[17]) << 17)
+            bitmaskForM |= (UInt64(result[18]) << 18)
+            bitmaskForM |= (UInt64(result[19]) << 19)
+            bitmaskForM |= (UInt64(result[20]) << 20)
+            bitmaskForM |= (UInt64(result[21]) << 21)
+            bitmaskForM |= (UInt64(result[22]) << 22)
+            bitmaskForM |= (UInt64(result[23]) << 23)
+            bitmaskForM |= (UInt64(result[24]) << 24)
+            bitmaskForM |= (UInt64(result[25]) << 25)
+            bitmaskForM |= (UInt64(result[26]) << 26)
+            bitmaskForM |= (UInt64(result[27]) << 27)
+            bitmaskForM |= (UInt64(result[28]) << 28)
+            bitmaskForM |= (UInt64(result[29]) << 29)
+            bitmaskForM |= (UInt64(result[30]) << 30)
+            bitmaskForM |= (UInt64(result[31]) << 31)
+            bitmaskForM |= (UInt64(result[32]) << 32)
+            bitmaskForM |= (UInt64(result[33]) << 33)
+            bitmaskForM |= (UInt64(result[34]) << 34)
+            bitmaskForM |= (UInt64(result[35]) << 35)
+            bitmaskForM |= (UInt64(result[36]) << 36)
+            bitmaskForM |= (UInt64(result[37]) << 37)
+            bitmaskForM |= (UInt64(result[38]) << 38)
+            bitmaskForM |= (UInt64(result[39]) << 39)
+            bitmaskForM |= (UInt64(result[40]) << 40)
+            bitmaskForM |= (UInt64(result[41]) << 41)
+            bitmaskForM |= (UInt64(result[42]) << 42)
+            bitmaskForM |= (UInt64(result[43]) << 43)
+            bitmaskForM |= (UInt64(result[44]) << 44)
+            bitmaskForM |= (UInt64(result[45]) << 45)
+            bitmaskForM |= (UInt64(result[46]) << 46)
+            bitmaskForM |= (UInt64(result[47]) << 47)
+            bitmaskForM |= (UInt64(result[48]) << 48)
+            bitmaskForM |= (UInt64(result[49]) << 49)
+            bitmaskForM |= (UInt64(result[50]) << 50)
+            bitmaskForM |= (UInt64(result[51]) << 51)
+            bitmaskForM |= (UInt64(result[52]) << 52)
+            bitmaskForM |= (UInt64(result[53]) << 53)
+            bitmaskForM |= (UInt64(result[54]) << 54)
+            bitmaskForM |= (UInt64(result[55]) << 55)
+            bitmaskForM |= (UInt64(result[56]) << 56)
+            bitmaskForM |= (UInt64(result[57]) << 57)
+            bitmaskForM |= (UInt64(result[58]) << 58)
+            bitmaskForM |= (UInt64(result[59]) << 59)
+            bitmaskForM |= (UInt64(result[60]) << 60)
+            bitmaskForM |= (UInt64(result[61]) << 61)
+            bitmaskForM |= (UInt64(result[62]) << 62)
+            bitmaskForM |= (UInt64(result[63]) << 63)
         return bitmaskForM
         // let res0 = simd._mm256_movemask_epi8(cmpRes0) // this command is faster, but caused havok in XCode. The compiler errors tells us nothing. we blame bugs in xcode for this matter.
         // let x : __mmask32 = simd._mm256_bitshuffle_epi64_mask(cmpRes1, collectLeastSiginificantInByte)
         //        return UInt64(cmpAsLowerBits) | (UInt64(cmpAsUpperBits) << 32)
     }
     
+    // http://bitmath.blogspot.com/2013/05/carryless-multiplicative-inverse.html
+    @inlinable internal static func carryLessMultiplyScalar(factorOne :UInt64, factorTwo :UInt64) -> UInt64 {
+        var answer = UInt64.zero
+        var first = factorOne
+        var second = factorTwo
+        while second != UInt64.zero {
+            let shouldMultiply = first & UInt64(1)
+            answer ^= second &* shouldMultiply
+            first >>= 1
+            second <<= 1
+        }
+        
+        return answer
+    }
+    
+    @inlinable internal static func carryLessMultiply(factorOne:SIMD2<UInt64>, factorTwo:SIMD2<UInt64>) -> SIMD2<UInt64> {
+        var answer = SIMD2<UInt64>.zero
+        var first = factorOne
+        var second = factorTwo
+        while any(second .!= UInt64.zero) {
+            let shouldMultiply = first & UInt64(1)
+            answer ^= second &* shouldMultiply
+            first &>>= 1
+            second &<<= 1
+        }
+        
+        return answer
+    }
+    
+    @inlinable internal static func carryLessMultiplySigned(factorOne:SIMD2<Int64>, factorTwo:SIMD2<Int64>) -> SIMD2<Int64> {
+        var answer = SIMD2<Int64>.zero
+        var first = factorOne
+        var second = factorTwo
+        for _ in 0...63 {
+            let shouldMultiply = first & Int64(1)
+            answer ^= second &* shouldMultiply
+            first &>>= 1
+            second &<<= 1
+        }
+        
+        return answer
+    }
+    
     // return the quote mask (which is a half-open mask that covers the first
     // quote in a quote pair and everything in the quote pair)
-    // We also update the prev_iter_inside_quote value to
+    // We also update the prevIterInsideQuote value to
     // tell the next iteration whether we finished the final iteration inside a
     // quote pair; if so, this  inverts our behavior of  whether we're inside
     // quotes for the next iteration.
     @inlinable internal static func findQuoteMask(input :SimdInput, prevIterInsideQuote :inout UInt64) -> UInt64 {
-        let quoteBits = cmpMaskAgainstInput(input: input, m: comma)
+        let quoteBits = cmpMaskAgainstInput(input: input, m: quote)
 #if arch(x86_64)
-        let quoteBitsS = Int64(quoteBits)
-        let a :simd.__m128i = simd._mm_set_epi64x(Int64.zero, quoteBitsS)
-        let b :simd.__m128i = simd._mm_set1_epi8(Int8.min)
-        // TODO Figure out if the original _mm_clmulepi64_si128 can be swapped for _mm_mul_epi32
-        let immediate = a &* b
-        var quoteMask = UInt64(simd._mm_cvtsi128_si64(immediate))
+        // let quoteBitsInt64 = Int64(bitPattern: quoteBits)
+        // let most sigificant int64 be 0. let least significant int64 be quoteBits
+        // let factorOne :SIMD2<Int64> = simd._mm_set_epi64x(Int64.zero, quoteBitsInt64)
+        //
+        // let most sigificant int64 be -1. let least significant int64 be -1
+        // let all8BitsOn = Int8(bitPattern: 255)
+        // let factorTwo :SIMD2<Int64> = simd._mm_set1_epi8(all8BitsOn) // = 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+        // _mm_clmulepi64_si128 (carry-less multiply) can be swapped for *&
+        // (_mm_clmulepi64_si128(_mm_set_epi64x(0ULL, quote_bits), _mm_set1_epi8(0xFF), 0)
+        // let a = carryLessMultiplySigned(factorOne:factorOne, factorTwo: factorTwo) // carryLessMultiply(factorOne: factorOne, factorTwo: factorTwo)
+        // Copy the lower 64-bit integer in a to dst.
+        // let immediate = simd._mm_cvtsi128_si64(a)
+        var quoteMask = carryLessMultiplyScalar(factorOne: quoteBits, factorTwo: UInt64.max)
 #elseif arch(arm64)
         // uint64_t quote_mask = vmull_p64( -1ULL, quote_bits)
         // Polynomial Multiply Long. This instruction multiplies corresponding elements in the lower or upper half of the vectors of the two source SIMD&FP registers, places the results in a vector, and writes the vector to the destination SIMD&FP register. The destination vector elements are twice as long as the elements that are multiplied.
         var quoteMask = simd.vmull_p64(UInt64.max, quoteBits) // :poly128_t
 #else
-        let a :SIMD2<UInt64> = SIMD2<UInt64>(UInt64.zero, quoteBits)
-        let b :SIMD2<UInt64> = SIMD2<UInt64>(UInt64.zero, UInt64.min)
-        let immediate = a &* b
-        var quoteMask :UInt64 = immediate[0] & immediate[1]
+        var quoteMask = carryLessMultiplyScalar(factorOne: quoteBits, factorTwo: UInt64.max)
 #endif
         quoteMask ^= prevIterInsideQuote
         // right shift of a signed value expected to be well-defined and standard
         // compliant as of C++20,
         // John Regher from Utah U. says this is fine code
-        prevIterInsideQuote = UInt64(Int64(quoteMask) >> 63)
+        let quoteMaskInt64 = Int64(bitPattern: quoteMask)
+        let quoteMaskInt64Shifted = quoteMaskInt64 >> 63
+        prevIterInsideQuote = UInt64(bitPattern: quoteMaskInt64Shifted)
         return quoteMask
     }
-   //     internal static func flattenBits(basePtr :UnsafeMutablePointer<UInt32>, base :inout Int, idx :size_t, b :UInt64) {
+  
     @inlinable internal static func flattenBits(basePtr :inout [UInt32]!, base :inout Int, idx :size_t, b :UInt64) {
         var bits = b
         if bits != UInt64.zero {
@@ -284,16 +334,16 @@ struct SimdCSV {
                     let bufWithOffset = buf + internalIdx
                     let input = fillInput(ptr: bufWithOffset)
                     let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
-                    let sep = UInt64(cmpMaskAgainstInput(input: input, m: comma))
+                    let sep = cmpMaskAgainstInput(input: input, m: comma)
                     var end :UInt64 = UInt64.zero
                     if CRLF {
-                        let cr :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: carrageReturn))
+                        let cr :UInt64 = cmpMaskAgainstInput(input: input, m: carrageReturn)
                         let crAdjusted :UInt64 = (cr << 1) | prevIterCrEnd
-                        let lf :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
+                        let lf :UInt64 = cmpMaskAgainstInput(input: input, m: lineFeed)
                         end = (lf & crAdjusted)
                         prevIterCrEnd = cr >> 63
                     } else {
-                        end = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
+                        end = cmpMaskAgainstInput(input: input, m: lineFeed)
                     }
                     
                     fields[b] = (end | sep) & ~quoteMask
@@ -314,16 +364,16 @@ struct SimdCSV {
         for idx in stride(from: 0, to: lenminus64, by: 64) {
             let input = fillInput(ptr:buf + idx)
             let quoteMask = findQuoteMask(input: input, prevIterInsideQuote: &prevIterInsideQuote)
-            let sep = UInt64(cmpMaskAgainstInput(input: input, m: comma))
+            let sep = cmpMaskAgainstInput(input: input, m: comma)
             var end :UInt64 = UInt64.zero
             if CRLF {
-                let cr :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: carrageReturn))
+                let cr :UInt64 = cmpMaskAgainstInput(input: input, m: carrageReturn)
                 let crAdjusted :UInt64 = (cr << 1) | prevIterCrEnd
-                let lf :UInt64 = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
+                let lf :UInt64 = cmpMaskAgainstInput(input: input, m: lineFeed)
                 end = lf & crAdjusted
                 prevIterCrEnd = cr >> 63
             } else {
-                end = UInt64(cmpMaskAgainstInput(input: input, m: lineFeed))
+                end = cmpMaskAgainstInput(input: input, m: lineFeed)
             }
             // note - a bit of a high-wire act here with quotes
             // we can't put something inside the quotes with the CR
