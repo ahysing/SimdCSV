@@ -13,8 +13,10 @@ public struct ParseCSV {
     public var indexEnds: [UInt32]! = []
     public var indices: [UInt32]! = []
     public var numberOfColumns: UInt32 = 0
-    public var numberOfIndexes: size_t = 0
-    
+    public var numberOfIndices: size_t = 0
+
+    fileprivate static let quote = Array("\"".utf8)[0]
+
     public init(CRLF: Bool = false,
                 data: Data! = nil,
                 indexEnds: [UInt32]! = [],
@@ -26,13 +28,13 @@ public struct ParseCSV {
         self.indexEnds = indexEnds
         self.indices = indices
         self.numberOfColumns = numberOfColumns
-        self.numberOfIndexes = numberOfIndexes
+        self.numberOfIndices = numberOfIndexes
     }
     
     public mutating func shrinkToFit() {
-        let oversized = indices.count - numberOfIndexes
+        let oversized = indices.count - numberOfIndices
         self.indices.removeLast(oversized)
-        let oversizedEnds = indexEnds.count - numberOfIndexes
+        let oversizedEnds = indexEnds.count - numberOfIndices
         self.indexEnds.removeLast(oversizedEnds)
     }
     
@@ -44,7 +46,6 @@ public struct ParseCSV {
         return String(decoding: textblock, as: UTF8.self)
     }
     
-    fileprivate static let quote = Array("\"".utf8)[0]
     public func getCellRemoveQuotes(idx: Int) -> String {
         var start = Data.Index(self.indices[idx])
         var end = Data.Index(self.indexEnds[idx])

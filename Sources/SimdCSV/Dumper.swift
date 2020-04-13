@@ -15,7 +15,7 @@ public class Dumper {
 
     public func dump(loadResult: LoadResult) {
         if loadResult.status == LoadStatus.OK {
-            for i in 0..<loadResult.csv.numberOfIndexes {
+            for i in 0..<loadResult.csv.numberOfIndices {
                 let first = Data.Index(loadResult.csv.indices[i])
                 let next = Data.Index(loadResult.csv.indexEnds[i])
                 let range: Range<Data.Index> = first..<next

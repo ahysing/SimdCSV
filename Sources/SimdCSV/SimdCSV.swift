@@ -358,6 +358,49 @@ public struct SimdCSV {
         return CRLFseenBitMask
     }
 
+    private static func countColumnsBeforeEnd(sep: UInt64, end: UInt64, quoteMask: UInt64) -> UInt32 {
+        let recordEnds = end & ~quoteMask
+        var columnEnds = sep & ~quoteMask
+        if countTrailingZeros(number: recordEnds) < countTrailingZeros(number: columnEnds) {
+            return 1
+        } else {
+            if recordEnds != 0 {
+                let allOnesBeforeEnd = recordEnds ^ (recordEnds - 1)
+                columnEnds = columnEnds & allOnesBeforeEnd
+            }
+            
+            return countNumberOfBits(number: columnEnds) + 1
+        }
+    }
+    
+    private static func scanDataCountColumns(buf: UnsafeMutableRawPointer!, CRLF: Bool) -> UInt32 {
+        var end = UInt64.zero
+        var numberOfColumns = UInt32.zero
+        var prevIterInsideQuote = UInt64.zero
+        // Used by CRLF
+        var prevIterCrEnd = UInt64.zero
+
+        var it = 0
+        repeat {
+            let SIMDinput = fillInput(ptr: buf + it)
+            let quoteMask = findQuoteMask(input: SIMDinput, prevIterInsideQuote: &prevIterInsideQuote)
+            let sep = cmpMaskAgainstInput(input: SIMDinput, oneLetter: comma)
+            if CRLF {
+                let cr: UInt64 = cmpMaskAgainstInput(input: SIMDinput, oneLetter: carrageReturn)
+                let crAdjusted: UInt64 = (cr << 1) | prevIterCrEnd
+                let lf: UInt64 = cmpMaskAgainstInput(input: SIMDinput, oneLetter: lineFeed)
+                end = lf & crAdjusted
+                prevIterCrEnd = cr >> 63
+            } else {
+                end = cmpMaskAgainstInput(input: SIMDinput, oneLetter: lineFeed)
+            }
+            
+            numberOfColumns += countColumnsBeforeEnd(sep: sep, end: end, quoteMask: quoteMask)
+            it += 64
+        } while (end == 0)
+        return numberOfColumns
+    }
+    
     private static func findIndexes(buf: UnsafeMutableRawPointer!, len: size_t, pcsv: inout ParseCSV, CRLF: Bool = false) {
         var prevIterInsideQuote = UInt64.zero
         // Used by CRLF
@@ -367,8 +410,10 @@ public struct SimdCSV {
         var base: Int = len > 0 ? 1 : 0
         if len > 0 {
             pcsv.indices[0] = 0
+            pcsv.numberOfColumns = scanDataCountColumns(buf: buf, CRLF: CRLF)
         }
 
+        prevIterCrEnd = UInt64.zero
         let CSVbufferSize = 4 // it seems to be about the sweetspot.
         if lenminus64 > 64 * CSVbufferSize {
             var fields: [UInt64] = Array<UInt64>(repeating: UInt64.zero, count: CSVbufferSize)
@@ -438,8 +483,8 @@ public struct SimdCSV {
             let twoByteBoundary = CRLF ? buildTwoByteEndMask(end, sep, notQuoteMask) : 0
             flattenBits(pcsv: &pcsv, base: &base, idx: idx, columnBitMask: fieldSep, CRLFseenBitMask: twoByteBoundary)
         }
-
-        pcsv.numberOfIndexes = base
+        
+        pcsv.numberOfIndices = base
     }
 
     public func loadCSV(filepath: URL, CRLF: Bool = false, verbose: Bool = false) -> LoadResult {
@@ -499,7 +544,7 @@ public struct SimdCSV {
 
             os_log("[verbose] Number of cycles per byte %@", self.log, cycles)
 */
-            self.log.debug("Number of indexes found:  %@", pcsv.numberOfIndexes)
+            self.log.debug("Number of indexes found:  %@", pcsv.numberOfIndices)
             /*
             os_log("[verbose] Number of bytes per index: ", self.log, pcsv.indexes.)
               os_log("[verbose] Number of cycles (ref) %@", self.log, cycles)

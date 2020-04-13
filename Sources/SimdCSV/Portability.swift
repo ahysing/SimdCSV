@@ -62,7 +62,7 @@ func countLeadingZerosSwift(number: UInt64) -> Int32 {
     return Int32(result)
 }
 
-@inlinable func countNumberOfBitsSwiftBuiltin(number: UInt64) -> UInt32 {
+@inlinable func countNumberOfBits(number: UInt64) -> UInt32 {
     let resultInt = number.nonzeroBitCount
     return UInt32(resultInt)
 }

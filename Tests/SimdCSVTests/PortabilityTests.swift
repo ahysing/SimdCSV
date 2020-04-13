@@ -124,34 +124,34 @@ final class PortabilityTests: XCTestCase {
        }
     }
 
-    func testcountNumberOfBitsSwiftBuiltin() {
+    func testcountNumberOfBits() {
         let input = UInt64.max
 
-        let result = countNumberOfBitsSwiftBuiltin(number: input)
+        let result = countNumberOfBits(number: input)
 
         XCTAssertEqual(64, result)
     }
 
-    func testcountNumberOfBitsSwiftBuiltinInputIsZero() {
+    func testcountNumberOfBitsInputIsZero() {
         let input = UInt64(0)
 
-        let result = countNumberOfBitsSwiftBuiltin(number: input)
+        let result = countNumberOfBits(number: input)
 
         XCTAssertEqual(0, result)
     }
 
-    func testcountNumberOfBitsSwiftBuiltinInputIsOne() {
+    func testcountNumberOfBitsInputIsOne() {
         let input = UInt64(1)
 
-        let result = countNumberOfBitsSwiftBuiltin(number: input)
+        let result = countNumberOfBits(number: input)
 
         XCTAssertEqual(1, result)
     }
 
-    func testcountNumberOfBitsSwiftBuiltinInputIsPowerOfTwo() {
+    func testcountNumberOfBitsInputIsPowerOfTwo() {
         let input = UInt64(32)
 
-        let result = countNumberOfBitsSwiftBuiltin(number: input)
+        let result = countNumberOfBits(number: input)
 
         XCTAssertEqual(1, result)
     }
@@ -162,7 +162,7 @@ final class PortabilityTests: XCTestCase {
             let input = UInt64(i)
 
             let expected = countNumberOfBitsSwift(number: input)
-            let result = countNumberOfBitsSwiftBuiltin(number: input)
+            let result = countNumberOfBits(number: input)
 
             XCTAssertEqual(expected, result)
         }

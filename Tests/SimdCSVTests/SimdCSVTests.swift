@@ -234,7 +234,7 @@ final class SimdCSVTests: XCTestCase {
         let csv = result.csv
         XCTAssertNotNil(csv)
         XCTAssertNotNil(csv.indices)
-        let count = result.csv.numberOfIndexes
+        let count = result.csv.numberOfIndices
         XCTAssertEqual(11, count)
     }
     
