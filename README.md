@@ -18,7 +18,7 @@ It follows the same API design as the original C implementation, but uses more s
 These are the prerequisites for building the software.
 
 * Xcode
-* MacOS 10.13
+* MacOS 10.10
 
 ## Getting Data in Code
 

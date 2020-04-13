@@ -8,7 +8,7 @@
 import os.log
 import Foundation
 
-protocol AppLogger {
+public protocol AppLogger {
     func debug(_ message: StaticString, _ args: CVarArg...)
     func info(_ message: StaticString, _ args: CVarArg...)
     func error(_ message: StaticString, _ args: CVarArg...)
@@ -16,7 +16,7 @@ protocol AppLogger {
 }
 
 @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-class AppToOSLog: AppLogger {
+public class AppToOSLog: AppLogger {
     internal var log: os.OSLog
     init(logger: os.OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")
     ) {
@@ -27,40 +27,40 @@ class AppToOSLog: AppLogger {
         self.log = OSLog(subsystem: subsystem, category: category)
     }
 
-    func debug(_ message: StaticString, _ args: CVarArg...) {
+    public func debug(_ message: StaticString, _ args: CVarArg...) {
         os_log(message, log: log, type: .debug, args)
     }
 
-    func info(_ message: StaticString, _ args: CVarArg...) {
+    public func info(_ message: StaticString, _ args: CVarArg...) {
         os_log(message, log: log, type: .info, args)
     }
 
-    func error(_ message: StaticString, _ args: CVarArg...) {
+    public func error(_ message: StaticString, _ args: CVarArg...) {
         os_log(message, log: log, type: .error, args)
     }
 
-    func fault(_ message: StaticString, _ args: CVarArg...) {
+    public func fault(_ message: StaticString, _ args: CVarArg...) {
         os_log(message, log: log, type: .fault, args)
     }
 }
 
-class StdOutLog: AppLogger {
+public class StdOutLog: AppLogger {
     init() {
     }
 
-    func debug(_ message: StaticString, _ args: CVarArg...) {
+    public func debug(_ message: StaticString, _ args: CVarArg...) {
         debugPrint(message, args)
     }
 
-    func info(_ message: StaticString, _ args: CVarArg...) {
+    public func info(_ message: StaticString, _ args: CVarArg...) {
         print(message, args)
     }
 
-    func error(_ message: StaticString, _ args: CVarArg...) {
+    public func error(_ message: StaticString, _ args: CVarArg...) {
         print(message, args)
     }
 
-    func fault(_ message: StaticString, _ args: CVarArg...) {
+    public func fault(_ message: StaticString, _ args: CVarArg...) {
         print(message, args)
     }
 }

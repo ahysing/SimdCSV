@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct IOUtil {
+public struct IOUtil {
     public func getCorpus(filepath: URL?, padding: size_t) throws -> Data {
         let fileAttrs = try FileManager.default.attributesOfItem(atPath: filepath!.absoluteString)
         let fileSize = fileAttrs[FileAttributeKey.size] as! size_t

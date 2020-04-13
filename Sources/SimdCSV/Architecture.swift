@@ -10,11 +10,7 @@ import simd
 import _Builtin_intrinsics.intel
 #warning("Imported Intel Intrinsics. Now we are playing with Intel SSE :)")
 #endif
-
-// What are the compile targets available?
-//
-// https://stackoverflow.com/questions/15036909/clang-how-to-list-supported-target-architectures#18576360
-// https://en.wikipedia.org/wiki/Apple-designed_processors#Apple_S5
+//  https://en.wikipedia.org/wiki/Apple-designed_processors#Apple_S5
 #if arch(arm64)
 import _Builtin_intrinsics.arm
 #warning("Imported ARM Intrinsics for ARM64. Now we are playing with ARM neon :)")
@@ -25,7 +21,7 @@ import _Builtin_intrinsics.arm
 #warning("Imported ARM Intrinsics for ARM7 and ARM8. Now we are playing with ARM neon :)")
 #endif
 
-struct Architecture {
+public struct Architecture {
     #if arch(x86_64)
         public let architecture = "x86_64"
     #elseif arch(i386)

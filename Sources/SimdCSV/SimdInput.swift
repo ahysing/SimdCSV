@@ -7,6 +7,9 @@
 
 import simd
 
-struct SimdInput {
-    var letters: SIMD64<UInt8>
+internal struct SimdInput {
+    internal var letters: SIMD64<UInt8>
+    @usableFromInline init(letters: SIMD64<UInt8>) {
+        self.letters = letters
+    }
 }

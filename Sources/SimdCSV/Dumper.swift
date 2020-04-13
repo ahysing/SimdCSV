@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Dumper {
+public class Dumper {
     private let log: AppLogger
     init(log: AppLogger = StdOutLog()) {
         self.log = log
@@ -15,17 +15,14 @@ class Dumper {
 
     public func dump(loadResult: LoadResult) {
         if loadResult.status == LoadStatus.OK {
-            loadResult.csv.data?.withUnsafeBytes { rawBufferPointer in
-               for i in 0..<loadResult.csv.numberOfIndexes {
-                    
-                    let first = Data.Index(loadResult.csv.indices[i])
-                    let next = Data.Index(loadResult.csv.indexEnds[i])
-                    let range :Range<Data.Index> = first..<next
-                    let textSegment = loadResult.csv.data.subdata(in: range)
-                    let text = String(decoding: textSegment, as: UTF8.self)
-                    self.log.info("", i, ": ", text)
-                }
-           }
+            for i in 0..<loadResult.csv.numberOfIndexes {
+                let first = Data.Index(loadResult.csv.indices[i])
+                let next = Data.Index(loadResult.csv.indexEnds[i])
+                let range: Range<Data.Index> = first..<next
+                let textSegment = loadResult.csv.data.subdata(in: range)
+                let text = String(decoding: textSegment, as: UTF8.self)
+                self.log.info("", i, ": ", text)
+            }
        } else {
             self.log.error("Printing LoadResult that failed...")
        }

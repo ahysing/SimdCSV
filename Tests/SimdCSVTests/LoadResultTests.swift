@@ -12,7 +12,7 @@ final class LoadResultTests: XCTestCase {
     func testLoadResultInit() {
         XCTAssertEqual(LoadResult(status: LoadStatus.OK).status, LoadStatus.OK)
     }
-    
+
     static var allTests = [
         ("testLoadResultInit", testLoadResultInit)
     ]

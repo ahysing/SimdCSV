@@ -7,9 +7,9 @@
 import Foundation
 import simd
 
-struct SimdCSV {
+public struct SimdCSV {
     fileprivate static let CsvPadding: size_t = 64
-    fileprivate static let quote = Array("\"".utf8)[0]
+    @usableFromInline internal static let quote = Array("\"".utf8)[0]
     fileprivate static let comma = Array(",".utf8)[0]
     fileprivate static let carrageReturn: UInt8 = 0x0d
     fileprivate static let lineFeed: UInt8 = 0x0a
@@ -31,7 +31,7 @@ struct SimdCSV {
         }
     }
 
-    @inlinable internal static func fillInput(ptr: UnsafeRawPointer!) -> SimdInput {
+    internal static func fillInput(ptr: UnsafeRawPointer!) -> SimdInput {
         let values: UnsafePointer<UInt8> = ptr.bindMemory(to: UInt8.self, capacity: 64)
         let letters = SIMD64<UInt8>(values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15], values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31], values[32], values[33], values[34], values[35], values[36], values[37], values[38], values[39], values[40], values[41], values[42], values[43], values[44], values[45], values[46], values[47], values[48], values[49], values[50], values[51], values[52], values[53], values[54], values[55], values[56], values[57], values[58], values[59], values[60], values[61], values[62], values[63])
         let input = SimdInput(letters: letters)
@@ -40,8 +40,8 @@ struct SimdCSV {
 
     // a straightforward comparison of a mask against input. Would be
     // cheaper in AVX512.
-    @inlinable internal static func cmpMaskAgainstInput(input: SimdInput, m: UInt8) -> UInt64 {
-        let compareLetters: SIMDMask<SIMD64<Int8>> = input.letters .== m
+    internal static func cmpMaskAgainstInput(input: SimdInput, oneLetter: UInt8) -> UInt64 {
+        let compareLetters: SIMDMask<SIMD64<Int8>> = input.letters .== oneLetter
         var result = SIMD64<Int8>.zero
         result.replace(with: 1, where: compareLetters)
         var bitmaskForM = UInt64(result[0])
@@ -163,7 +163,7 @@ struct SimdCSV {
     // tell the next iteration whether we finished the final iteration inside a
     // quote pair; if so, this  inverts our behavior of  whether we're inside
     // quotes for the next iteration.
-    @inlinable internal static func findQuoteMask(input: SimdInput, prevIterInsideQuote: inout UInt64) -> UInt64 {
+    internal static func findQuoteMask(input: SimdInput, prevIterInsideQuote: inout UInt64) -> UInt64 {
 
 // #if arch(x86_64)
         // let quoteBitsInt64 = Int64(bitPattern: quoteBits)
@@ -182,7 +182,7 @@ struct SimdCSV {
         // uint64_t quote_mask = vmull_p64( -1ULL, quote_bits)
         // Polynomial Multiply Long. This instruction multiplies corresponding elements in the lower or upper half of the vectors of the two source SIMD&FP registers, places the results in a vector, and writes the vector to the destination SIMD&FP register. The destination vector elements are twice as long as the elements that are multiplied.
         //#endif
-        let quoteBits = cmpMaskAgainstInput(input: input, m: quote)
+        let quoteBits = cmpMaskAgainstInput(input: input, oneLetter: quote)
         var quoteMask = carryLessMultiplyScalar(factorOne: quoteBits, factorTwo: UInt64.max)
         quoteMask ^= prevIterInsideQuote
         let quoteMaskInt64 = Int64(bitPattern: quoteMask)
@@ -207,63 +207,63 @@ struct SimdCSV {
 
             var twoByteBoundary: UInt32 = 0
             var columnWidth: UInt32 = 0
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base - 1] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 0] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 0] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 1] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 1] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 2] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 2] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 3] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 3] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 4] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 4] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 5] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 5] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 6] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             columnWidth = countTrailingZeros(number: bits)
             twoByteBoundary = twoByteEnd & 1
             pcsv.indexEnds[base + 6] = index + columnWidth - twoByteBoundary
             twoByteEnd >>= 1
             pcsv.indices[base + 7] = index + columnWidth + 1
             bits = bits & bits.subtractingReportingOverflow(1).partialValue
-            
+
             if cnt > 8 {
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
@@ -271,49 +271,49 @@ struct SimdCSV {
                 twoByteEnd >>= 1
                 pcsv.indices[base + 8] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 8] = index + columnWidth - twoByteBoundary
                 twoByteEnd >>= 1
                 pcsv.indices[base + 9] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 9] = index + columnWidth - twoByteBoundary
                 twoByteEnd >>= 1
                 pcsv.indices[base + 10] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 10] = index + columnWidth - twoByteBoundary
                 twoByteEnd >>= 1
                 pcsv.indices[base + 11] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 11] = index + columnWidth - twoByteBoundary
                 twoByteEnd >>= 1
                 pcsv.indices[base + 12] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 12] = index + columnWidth - twoByteBoundary
                 twoByteEnd >>= 1
                 pcsv.indices[base + 13] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 13] = index + columnWidth - twoByteBoundary
                 twoByteEnd >>= 1
                 pcsv.indices[base + 14] = index + columnWidth + 1
                 bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                
+
                 columnWidth = countTrailingZeros(number: bits)
                 twoByteBoundary = twoByteEnd & 1
                 pcsv.indexEnds[base + 14] = index + columnWidth - twoByteBoundary
@@ -331,23 +331,15 @@ struct SimdCSV {
                     twoByteEnd >>= 1
                     pcsv.indices[base] = index + columnWidth + 1
                     bits = bits & bits.subtractingReportingOverflow(1).partialValue
-                    
-                    base += 1
-                    /*
-                    columnWidth = countTrailingZeros(number: bits)
-                    pcsv.indexEnds[base - 1] = index + columnWidth - twoByteBoundary
-                    pcsv.indices[base] = index + columnWidth + 1
-                    bits = bits & bits.subtractingReportingOverflow(1).partialValue
 
                     base += 1
-                    */
                 }
             }
 
             base = nextBase
         }
     }
-    
+
     private static func buildTwoByteEndMask(_ end: UInt64, _ sep: UInt64, _ quo: UInt64) -> UInt32 {
         var recordEnds = end & quo
         var columnEnds = sep & quo
@@ -362,7 +354,7 @@ struct SimdCSV {
             }
             CRLFseenBitMask <<= 1
         }
-        
+
         return CRLFseenBitMask
     }
 
@@ -376,31 +368,31 @@ struct SimdCSV {
         if len > 0 {
             pcsv.indices[0] = 0
         }
-        
+
         let CSVbufferSize = 4 // it seems to be about the sweetspot.
         if lenminus64 > 64 * CSVbufferSize {
             var fields: [UInt64] = Array<UInt64>(repeating: UInt64.zero, count: CSVbufferSize)
             var twoByteBoundaryBitMasks: [UInt32] = Array<UInt32>(repeating: UInt32.zero, count: CSVbufferSize)
             var globalIdx: size_t = 0
             let finish = lenminus64 - 64 * CSVbufferSize + 1
-            let by = 64 * CSVbufferSize
-            for idx in stride(from: globalIdx, to: finish, by: by) {
+            let stepBy = 64 * CSVbufferSize
+            for idx in stride(from: globalIdx, to: finish, by: stepBy) {
                 for i in 0...CSVbufferSize {
                     let internalIdx: size_t = 64 * i + idx
                     let bufWithOffset = buf + internalIdx
                     let SIMDinput = fillInput(ptr: bufWithOffset)
                     let quoteMask = findQuoteMask(input: SIMDinput, prevIterInsideQuote: &prevIterInsideQuote)
-                    let sep = cmpMaskAgainstInput(input: SIMDinput, m: comma)
+                    let sep = cmpMaskAgainstInput(input: SIMDinput, oneLetter: comma)
                     var end: UInt64 = UInt64.zero
-                    
+
                     if CRLF {
-                        let cr: UInt64 = cmpMaskAgainstInput(input: SIMDinput, m: carrageReturn)
+                        let cr: UInt64 = cmpMaskAgainstInput(input: SIMDinput, oneLetter: carrageReturn)
                         let crAdjusted: UInt64 = (cr << 1) | prevIterCrEnd
-                        let lf: UInt64 = cmpMaskAgainstInput(input: SIMDinput, m: lineFeed)
+                        let lf: UInt64 = cmpMaskAgainstInput(input: SIMDinput, oneLetter: lineFeed)
                         end = lf & crAdjusted
                         prevIterCrEnd = cr >> 63
                     } else {
-                        end = cmpMaskAgainstInput(input: SIMDinput, m: lineFeed)
+                        end = cmpMaskAgainstInput(input: SIMDinput, oneLetter: lineFeed)
                     }
 
                     let notQuoteMask = ~quoteMask
@@ -423,17 +415,17 @@ struct SimdCSV {
 
             let simdInput = fillInput(ptr:bufWithOffset)
             let quoteMask = findQuoteMask(input: simdInput, prevIterInsideQuote: &prevIterInsideQuote)
-            let sep = cmpMaskAgainstInput(input: simdInput, m: comma)
+            let sep = cmpMaskAgainstInput(input: simdInput, oneLetter: comma)
             var end: UInt64 = UInt64.zero
-            
+
             if CRLF {
-                let cr: UInt64 = cmpMaskAgainstInput(input: simdInput, m: carrageReturn)
+                let cr: UInt64 = cmpMaskAgainstInput(input: simdInput, oneLetter: carrageReturn)
                 let crAdjusted: UInt64 = (cr << 1) | prevIterCrEnd
-                let lf: UInt64 = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
+                let lf: UInt64 = cmpMaskAgainstInput(input: simdInput, oneLetter: lineFeed)
                 end = lf & crAdjusted
                 prevIterCrEnd = cr >> 63
             } else {
-                end = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
+                end = cmpMaskAgainstInput(input: simdInput, oneLetter: lineFeed)
             }
             // note - a bit of a high-wire act here with quotes
             // we can't put something inside the quotes with the CR
@@ -442,7 +434,7 @@ struct SimdCSV {
             // need to be thought about carefully
             let notQuoteMask = ~quoteMask
             let fieldSep = (end | sep) & notQuoteMask
-            
+
             let twoByteBoundary = CRLF ? buildTwoByteEndMask(end, sep, notQuoteMask) : 0
             flattenBits(pcsv: &pcsv, base: &base, idx: idx, columnBitMask: fieldSep, CRLFseenBitMask: twoByteBoundary)
         }
@@ -488,7 +480,7 @@ struct SimdCSV {
         csv.withUnsafeBytes { rawBufferPointer in
             let baseAddress: UnsafeRawPointer = rawBufferPointer.baseAddress!
             let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
-            let len = rawBufferPointer.count
+            let dataLength = rawBufferPointer.count
 
             var timingPhase: TimingPhase
             if #available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *) {
@@ -497,7 +489,7 @@ struct SimdCSV {
                 timingPhase = PosixTimingPhase(category: "Find indexes", log: self.log)
             }
             timingPhase.start()
-            SimdCSV.findIndexes(buf: CSVinMemory, len:len, pcsv: &pcsv, CRLF: CRLF)
+            SimdCSV.findIndexes(buf: CSVinMemory, len: dataLength, pcsv: &pcsv, CRLF: CRLF)
             timingPhase.stop()
         }
 

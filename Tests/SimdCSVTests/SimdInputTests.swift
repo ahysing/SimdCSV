@@ -14,7 +14,7 @@ final class SimdInputTests: XCTestCase {
     func testInit() {
         let _ = SimdInput(letters: SIMD64<UInt8>.zero)
     }
-    
+
     static var allTests = [
         ("testInit", testInit)
     ]

@@ -10,13 +10,13 @@ import os.signpost
 
 // a that is designed to start counting on coming into scope and stop counting, putting its results into
 // an Accumulator, when leaving scope. Optional - can just use explicit start/stop
-protocol TimingPhase {
+public protocol TimingPhase {
     func start()
     func stop()
 }
 
 @available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
-class OSTimingPhase: TimingPhase {
+public class OSTimingPhase: TimingPhase {
     private let category: StaticString
     private let log: os.OSLog
     private let signpostID: OSSignpostID
@@ -27,7 +27,7 @@ class OSTimingPhase: TimingPhase {
         self.signpostID = OSSignpostID(log: log.log)
     }
 
-    func start() {
+    public func start() {
         os_signpost(
             .begin,
             log: log,
@@ -35,7 +35,7 @@ class OSTimingPhase: TimingPhase {
             signpostID: self.signpostID)
     }
 
-    func stop() {
+    public func stop() {
         os_signpost(
             .end,
             log: log,
@@ -44,7 +44,7 @@ class OSTimingPhase: TimingPhase {
     }
 }
 
-class PosixTimingPhase: TimingPhase {
+public class PosixTimingPhase: TimingPhase {
     public var startedAt: clock_t
     public var stoppedAt: clock_t
     private let category: StaticString
@@ -56,11 +56,11 @@ class PosixTimingPhase: TimingPhase {
         self.stoppedAt = 0 as clock_t
     }
 
-    func start() {
+    public func start() {
         self.startedAt = clock()
     }
 
-    func stop() {
+    public func stop() {
         self.stoppedAt = clock()
         let duration = self.stoppedAt - self.stoppedAt
         self.log.info(self.category," Spent ", duration, " ms")

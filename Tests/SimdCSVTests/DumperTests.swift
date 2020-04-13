@@ -12,21 +12,21 @@ final class DumperTests: XCTestCase {
     func testDumpInMemory_doesNotCrash() {
         let text = "Header,Header2\n"
         let data = text.data(using: .utf8)
-        
+
         // .H...r.H....2
         let indexes = [UInt32(0), UInt32(7)]
         let indexEnds = [UInt32(6), UInt32(14)]
-        
+
         let pcsv = ParseCSV(numberOfIndexes: 2, indices: indexes, indexEnds: indexEnds, data: data)
         let dumper = Dumper.init()
-        let result = LoadResult(status:LoadStatus.OK, csv: pcsv)
-        
+        let result = LoadResult(status: LoadStatus.OK, csv: pcsv)
+
         // This line resolves in a crash
         dumper.dump(loadResult: result)
-        
+
         XCTAssert(true)
     }
-    
+
     func testDump_InputIsCSVWithDoubleQuotes() {
         let simdCSV = SimdCSV()
         let text = "Hip Hop Musician,Year of birth\r\n" +
@@ -41,7 +41,7 @@ final class DumperTests: XCTestCase {
         let dumper = Dumper.init()
         dumper.dump(loadResult: result)
     }
-    
+
 }
 
 #endif

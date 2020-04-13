@@ -8,7 +8,7 @@ final class SimdCSVTests: XCTestCase {
         let input = SimdInput(letters: SIMD64<UInt8>.zero)
         let mask :UInt8 = 7
         
-        let result = SimdCSV.cmpMaskAgainstInput(input:input, m: mask)
+        let result = SimdCSV.cmpMaskAgainstInput(input:input, oneLetter: mask)
         
         XCTAssertEqual(result, 0)
     }
@@ -19,7 +19,7 @@ final class SimdCSVTests: XCTestCase {
         let input = SimdInput(letters: SIMD64<UInt8>(repeating:SimdCSVTests.comma))
         let mask = SimdCSVTests.comma
         
-        let result = SimdCSV.cmpMaskAgainstInput(input:input, m: mask)
+        let result = SimdCSV.cmpMaskAgainstInput(input:input, oneLetter: mask)
         
         XCTAssertNotEqual(0, result)
         XCTAssertEqual(UInt64.max, result)
@@ -31,7 +31,7 @@ final class SimdCSVTests: XCTestCase {
         letters[0] = mask
         let input = SimdInput(letters: letters)
         
-        let result = SimdCSV.cmpMaskAgainstInput(input:input, m: mask)
+        let result = SimdCSV.cmpMaskAgainstInput(input:input, oneLetter: mask)
         
         XCTAssertEqual(UInt64(1), result)
     }
@@ -43,7 +43,7 @@ final class SimdCSVTests: XCTestCase {
         letters[BITPOSITION] = mask
         let input = SimdInput(letters: letters)
         
-        let result = SimdCSV.cmpMaskAgainstInput(input:input, m: mask)
+        let result = SimdCSV.cmpMaskAgainstInput(input:input, oneLetter: mask)
         
         XCTAssertEqual(UInt64(1) << BITPOSITION, result)
     }
@@ -53,7 +53,7 @@ final class SimdCSVTests: XCTestCase {
         input.letters[0] = SimdCSVTests.comma
         let mask = SimdCSVTests.comma
         
-        let result = SimdCSV.cmpMaskAgainstInput(input:input, m: mask)
+        let result = SimdCSV.cmpMaskAgainstInput(input:input, oneLetter: mask)
         
         XCTAssertEqual(1, result)
     }
@@ -64,7 +64,7 @@ final class SimdCSVTests: XCTestCase {
         input.letters[1] = SimdCSVTests.comma
         let mask = SimdCSVTests.comma
         
-        let result = SimdCSV.cmpMaskAgainstInput(input:input, m: mask)
+        let result = SimdCSV.cmpMaskAgainstInput(input:input, oneLetter: mask)
         
         XCTAssertEqual(3, result)
     }

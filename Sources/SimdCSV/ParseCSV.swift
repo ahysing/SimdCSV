@@ -8,11 +8,11 @@
 import Foundation
 
 public struct ParseCSV {
-    var CRLF: Bool = false
-    var numberOfIndexes: size_t = 0
-    var indices: [UInt32]! = []
-    var indexEnds: [UInt32]! = []
-    var data: Data! = nil
+    public var CRLF: Bool = false
+    public var numberOfIndexes: size_t = 0
+    public var indices: [UInt32]! = []
+    public var indexEnds: [UInt32]! = []
+    public var data: Data! = nil
 
     public mutating func shrinkToFit() {
         let oversized = indices.count - numberOfIndexes

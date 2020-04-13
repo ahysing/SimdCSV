@@ -15,7 +15,7 @@ final class LoadStatusTests: XCTestCase {
     func testSturctHasFailed() {
         XCTAssertEqual(LoadStatus.Failed, LoadStatus.Failed)
     }
-    
+
     static var allTests = [
         ("testSturctHasOK", testSturctHasOK),
         ("testSturctHasFailed", testSturctHasFailed)

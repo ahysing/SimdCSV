@@ -16,9 +16,9 @@ final class IOUtilTests: XCTestCase {
         if let filepath = Bundle.main.path(forResource: "Tickets_to_ride", ofType: "csv") {
             // do {
                 let url = URL(string:filepath)
-            
+
                 let result = try! ioUtil.getCorpus(filepath: url, padding:32)
-            
+
                 XCTAssertNotEqual(0, result.count)
             // } catch {
             //     XCTAssertTrue(false, "Failed to load Ticket_to_Ride.csv.")
@@ -27,7 +27,7 @@ final class IOUtilTests: XCTestCase {
             XCTAssertTrue(false, "Failed to load Ticket_to_Ride.csv.")
         }
     }
-    
+
     static var allTests = [
         ("testGetCorpusFromBundledCSV", testGetCorpusFromBundledCSV)
     ]

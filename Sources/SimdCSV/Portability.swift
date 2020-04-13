@@ -22,7 +22,7 @@ func countTrailingZerosSwift(number: UInt64) -> UInt32 {
     return counter
 }
 
-func countTrailingZeros(number: UInt64) -> UInt32 {
+@inlinable func countTrailingZeros(number: UInt64) -> UInt32 {
     let result =  number.trailingZeroBitCount
     return UInt32(result)
 }
@@ -45,7 +45,7 @@ func countLeadingZerosSwift(number: UInt64) -> Int32 {
     return counter
 }
 
-func countLeadingZeros(number: UInt64) -> Int32 {
+@inlinable func countLeadingZeros(number: UInt64) -> Int32 {
     // This function comes builtin with Swift.
     // it is usually backed by hardware instructions.
     // To lear more read about the ARM NEON in the documenttion below
@@ -62,7 +62,7 @@ func countLeadingZeros(number: UInt64) -> Int32 {
     return Int32(result)
 }
 
-func countNumberOfBitsSwiftBuiltin(number: UInt64) -> UInt32 {
+@inlinable func countNumberOfBitsSwiftBuiltin(number: UInt64) -> UInt32 {
     let resultInt = number.nonzeroBitCount
     return UInt32(resultInt)
 }
@@ -81,7 +81,7 @@ func countNumberOfBitsSwift(number: UInt64) -> UInt32 {
 // countColumnBoundariesFromBitMask
 // Fast counting the number of set bits
 // number: the input number to count bits in
-func countColumnBoundariesFromBitMask(number: UInt64) -> UInt32 {
+@inlinable func countColumnBoundariesFromBitMask(number: UInt64) -> UInt32 {
 // #if arch(x86_64)
 //     let result = simd.__popcntq(number)
 //     return UInt32(result)
