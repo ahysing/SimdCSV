@@ -15,15 +15,15 @@ public struct SimdCSV {
     fileprivate static let lineFeed: UInt8 = 0x0a
     public var log: AppLogger
     @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-    init(osLogger: AppToOSLog) {
+    public init(osLogger: AppToOSLog) {
         self.log = osLogger
     }
 
-    init(appLogger: AppLogger) {
+    public init(appLogger: AppLogger) {
         self.log = appLogger
     }
 
-    init() {
+    public init() {
         if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
             self.log = AppToOSLog()
         } else {

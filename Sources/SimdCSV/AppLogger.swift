@@ -18,12 +18,12 @@ public protocol AppLogger {
 @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
 public class AppToOSLog: AppLogger {
     internal var log: os.OSLog
-    init(logger: os.OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")
+    public init(logger: os.OSLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "SimdCSV")
     ) {
         self.log = logger
     }
 
-    init(subsystem: String, category: String) {
+    public init(subsystem: String, category: String) {
         self.log = OSLog(subsystem: subsystem, category: category)
     }
 
@@ -45,7 +45,7 @@ public class AppToOSLog: AppLogger {
 }
 
 public class StdOutLog: AppLogger {
-    init() {
+    public init() {
     }
 
     public func debug(_ message: StaticString, _ args: CVarArg...) {

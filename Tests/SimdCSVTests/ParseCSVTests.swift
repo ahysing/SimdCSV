@@ -15,7 +15,7 @@ final class ParseCSVTests: XCTestCase {
         // Arrange
         let indexes = Array<UInt32>(repeating: 0, count: 128)
         let indexEnds = Array<UInt32>(repeating: 0, count: 128)
-        var parseCSV = ParseCSV.init(numberOfIndexes: 2, indices: indexes, indexEnds: indexEnds, data: nil)
+        var parseCSV = ParseCSV.init(indexEnds: indexEnds, indices:indexes, numberOfIndexes: 2)
 
         // Act
         parseCSV.shrinkToFit()

@@ -17,7 +17,7 @@ final class DumperTests: XCTestCase {
         let indexes = [UInt32(0), UInt32(7)]
         let indexEnds = [UInt32(6), UInt32(14)]
 
-        let pcsv = ParseCSV(numberOfIndexes: 2, indices: indexes, indexEnds: indexEnds, data: data)
+        let pcsv = ParseCSV(data: data, indexEnds: indexEnds, indices: indexes)
         let dumper = Dumper.init()
         let result = LoadResult(status: LoadStatus.OK, csv: pcsv)
 

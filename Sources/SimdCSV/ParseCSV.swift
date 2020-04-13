@@ -9,11 +9,26 @@ import Foundation
 
 public struct ParseCSV {
     public var CRLF: Bool = false
-    public var numberOfIndexes: size_t = 0
-    public var indices: [UInt32]! = []
-    public var indexEnds: [UInt32]! = []
     public var data: Data! = nil
-
+    public var indexEnds: [UInt32]! = []
+    public var indices: [UInt32]! = []
+    public var numberOfColumns: UInt32 = 0
+    public var numberOfIndexes: size_t = 0
+    
+    public init(CRLF: Bool = false,
+                data: Data! = nil,
+                indexEnds: [UInt32]! = [],
+                indices: [UInt32]! = [],
+                numberOfColumns: UInt32 = 0,
+                numberOfIndexes: size_t = 0) {
+        self.CRLF = CRLF
+        self.data = data
+        self.indexEnds = indexEnds
+        self.indices = indices
+        self.numberOfColumns = numberOfColumns
+        self.numberOfIndexes = numberOfIndexes
+    }
+    
     public mutating func shrinkToFit() {
         let oversized = indices.count - numberOfIndexes
         self.indices.removeLast(oversized)

@@ -9,7 +9,7 @@ import Foundation
 
 public class Dumper {
     private let log: AppLogger
-    init(log: AppLogger = StdOutLog()) {
+    public init(log: AppLogger = StdOutLog()) {
         self.log = log
     }
 

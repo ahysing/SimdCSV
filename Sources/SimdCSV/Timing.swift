@@ -49,7 +49,7 @@ public class PosixTimingPhase: TimingPhase {
     public var stoppedAt: clock_t
     private let category: StaticString
     private let log: AppLogger
-    init(category: StaticString, log: AppLogger = StdOutLog()) {
+    public init(category: StaticString, log: AppLogger = StdOutLog()) {
         self.log = log
         self.category = category
         self.startedAt = 0 as clock_t
