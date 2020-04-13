@@ -8,34 +8,26 @@
 import Foundation
 
 class Dumper {
-    init() {}
+    private let log: AppLogger
+    init(log: AppLogger = StdOutLog()) {
+        self.log = log
+    }
 
     public func dump(loadResult: LoadResult) {
-       if loadResult.status == LoadStatus.OK {
-           let count = loadResult.csv.data!.count
-           loadResult.csv.data?.withUnsafeBytes { rawBufferPointer in
-               let baseAddress: UnsafeRawPointer = rawBufferPointer.baseAddress!
-               let dataPointer = baseAddress.bindMemory(to: CChar.self, capacity: count)
-               for i in 0...loadResult.csv.numberOfIndexes {
-                   print(i, ": ")
-                   let first = loadResult.csv.indexes[i]
-                   let next = loadResult.csv.indexes[i + 1]
-                   let wordCount = Int(next - first)
-
-                   var textArray = Array<CChar>(repeating: CChar.zero, count: wordCount)
-                   var it = 0
-                   for j in first...next {
-                       let idx = Int(j)
-                       textArray[it] = dataPointer[idx]
-                       it += 1
-                   }
-
-                   let text = String.init(utf8String: textArray) ?? ""
-                   print(text)
-               }
+        if loadResult.status == LoadStatus.OK {
+            loadResult.csv.data?.withUnsafeBytes { rawBufferPointer in
+               for i in 0..<loadResult.csv.numberOfIndexes {
+                    
+                    let first = Data.Index(loadResult.csv.indices[i])
+                    let next = Data.Index(loadResult.csv.indexEnds[i])
+                    let range :Range<Data.Index> = first..<next
+                    let textSegment = loadResult.csv.data.subdata(in: range)
+                    let text = String(decoding: textSegment, as: UTF8.self)
+                    self.log.info("", i, ": ", text)
+                }
            }
        } else {
-           print("Printing LoadResult that failed...")
+            self.log.error("Printing LoadResult that failed...")
        }
     }
 }

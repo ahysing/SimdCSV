@@ -197,112 +197,173 @@ struct SimdCSV {
     //
     // Will potentially store extra values beyond end of valid bits, so base_ptr
     // needs to be large enough to handle this
-    @inlinable internal static func flattenBits(basePtr: inout [UInt32]!, base: inout Int, idx: size_t, bits: UInt64) {
-        var buff = bits
-        if bits != UInt64.zero {
-            var columnBoundaries: UInt32 = 0
-            let cntUInt = countColumnBoundariesFromBitMask(number: buff)
-            let cnt = Int(cntUInt)
+    @inlinable internal static func flattenBits(pcsv: inout ParseCSV, base: inout Int, idx: size_t, columnBitMask: UInt64, CRLFseenBitMask: UInt32) {
+        var bits = columnBitMask
+        var twoByteEnd = CRLFseenBitMask
+        if columnBitMask != UInt64.zero {
+            let cnt = Int(countColumnBoundariesFromBitMask(number: bits))
             let nextBase = base + cnt
-            let one = UInt64(1)
-            var immediate: UInt64 = 0
-            let unsignedIdx = UInt32(idx)
+            let index = UInt32(idx)
 
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 0] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 1] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 2] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 3] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 4] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 5] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 6] = unsignedIdx + columnBoundaries
-            immediate = buff.subtractingReportingOverflow(one).partialValue
-            buff = buff & immediate
-
-            columnBoundaries = countTrailingZeros(number: buff)
-            basePtr[base + 7] = unsignedIdx + columnBoundaries
-
+            var twoByteBoundary: UInt32 = 0
+            var columnWidth: UInt32 = 0
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base - 1] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 0] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 0] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 1] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 1] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 2] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 2] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 3] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 3] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 4] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 4] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 5] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 5] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 6] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
+            columnWidth = countTrailingZeros(number: bits)
+            twoByteBoundary = twoByteEnd & 1
+            pcsv.indexEnds[base + 6] = index + columnWidth - twoByteBoundary
+            twoByteEnd >>= 1
+            pcsv.indices[base + 7] = index + columnWidth + 1
+            bits = bits & bits.subtractingReportingOverflow(1).partialValue
+            
             if cnt > 8 {
-                basePtr[base + 8] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 9] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 10] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 11] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 12] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 13] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 14] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
-                basePtr[base + 15] = unsignedIdx + columnBoundaries
-                immediate = buff.subtractingReportingOverflow(one).partialValue
-                buff = buff & immediate
-
-                columnBoundaries = countTrailingZeros(number: buff)
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 7] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 8] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 8] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 9] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 9] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 10] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 10] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 11] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 11] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 12] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 12] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 13] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 13] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 14] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                
+                columnWidth = countTrailingZeros(number: bits)
+                twoByteBoundary = twoByteEnd & 1
+                pcsv.indexEnds[base + 14] = index + columnWidth - twoByteBoundary
+                twoByteEnd >>= 1
+                pcsv.indices[base + 15] = index + columnWidth + 1
+                bits = bits & bits.subtractingReportingOverflow(1).partialValue
             }
 
             if cnt > 16 {
                 base += 16
-                while buff != UInt64.zero {
-                    columnBoundaries = countTrailingZeros(number: buff)
-                    basePtr[base] = unsignedIdx + columnBoundaries
-                    immediate = buff.subtractingReportingOverflow(one).partialValue
-                    buff = buff & immediate
+                while bits != UInt64.zero {
+                    columnWidth = countTrailingZeros(number: bits)
+                    twoByteBoundary = twoByteEnd & 1
+                    pcsv.indexEnds[base - 1] = index + columnWidth - twoByteBoundary
+                    twoByteEnd >>= 1
+                    pcsv.indices[base] = index + columnWidth + 1
+                    bits = bits & bits.subtractingReportingOverflow(1).partialValue
+                    
+                    base += 1
+                    /*
+                    columnWidth = countTrailingZeros(number: bits)
+                    pcsv.indexEnds[base - 1] = index + columnWidth - twoByteBoundary
+                    pcsv.indices[base] = index + columnWidth + 1
+                    bits = bits & bits.subtractingReportingOverflow(1).partialValue
 
                     base += 1
+                    */
                 }
             }
 
             base = nextBase
         }
+    }
+    
+    private static func buildTwoByteEndMask(_ end: UInt64, _ sep: UInt64, _ quo: UInt64) -> UInt32 {
+        var recordEnds = end & quo
+        var columnEnds = sep & quo
+        var CRLFseenBitMask = UInt32.zero
+        while recordEnds != 0 {
+            if countTrailingZeros(number: recordEnds) < countTrailingZeros(number: columnEnds) {
+                recordEnds = recordEnds & (recordEnds - 1)
+                CRLFseenBitMask |= 1
+            } else {
+                columnEnds = columnEnds & columnEnds.subtractingReportingOverflow(1).partialValue
+                CRLFseenBitMask |= 0
+            }
+            CRLFseenBitMask <<= 1
+        }
+        
+        return CRLFseenBitMask
     }
 
     private static func findIndexes(buf: UnsafeMutableRawPointer!, len: size_t, pcsv: inout ParseCSV, CRLF: Bool = false) {
@@ -311,38 +372,45 @@ struct SimdCSV {
         var prevIterCrEnd = UInt64.zero
 
         let lenminus64: size_t = len < 64 ? 0:  len - 64
-        var base: Int = 0
-
-        let SIMDCSV_BUFFERSIZE = 4 // it seems to be about the sweetspot.
-        if lenminus64 > 64 * SIMDCSV_BUFFERSIZE {
-            var fields: [UInt64] = Array<UInt64>.init(repeating: UInt64.zero, count: SIMDCSV_BUFFERSIZE)
+        var base: Int = len > 0 ? 1 : 0
+        if len > 0 {
+            pcsv.indices[0] = 0
+        }
+        
+        let CSVbufferSize = 4 // it seems to be about the sweetspot.
+        if lenminus64 > 64 * CSVbufferSize {
+            var fields: [UInt64] = Array<UInt64>(repeating: UInt64.zero, count: CSVbufferSize)
+            var twoByteBoundaryBitMasks: [UInt32] = Array<UInt32>(repeating: UInt32.zero, count: CSVbufferSize)
             var globalIdx: size_t = 0
-            let finish = lenminus64 - 64 * SIMDCSV_BUFFERSIZE + 1
-            let by = 64 * SIMDCSV_BUFFERSIZE
+            let finish = lenminus64 - 64 * CSVbufferSize + 1
+            let by = 64 * CSVbufferSize
             for idx in stride(from: globalIdx, to: finish, by: by) {
-                for b in 0...SIMDCSV_BUFFERSIZE {
-                    let internalIdx: size_t = 64 * b + idx
+                for i in 0...CSVbufferSize {
+                    let internalIdx: size_t = 64 * i + idx
                     let bufWithOffset = buf + internalIdx
-                    let simdInput = fillInput(ptr: bufWithOffset)
-                    let quoteMask = findQuoteMask(input: simdInput, prevIterInsideQuote: &prevIterInsideQuote)
-                    let sep = cmpMaskAgainstInput(input: simdInput, m: comma)
+                    let SIMDinput = fillInput(ptr: bufWithOffset)
+                    let quoteMask = findQuoteMask(input: SIMDinput, prevIterInsideQuote: &prevIterInsideQuote)
+                    let sep = cmpMaskAgainstInput(input: SIMDinput, m: comma)
                     var end: UInt64 = UInt64.zero
+                    
                     if CRLF {
-                        let cr: UInt64 = cmpMaskAgainstInput(input: simdInput, m: carrageReturn)
+                        let cr: UInt64 = cmpMaskAgainstInput(input: SIMDinput, m: carrageReturn)
                         let crAdjusted: UInt64 = (cr << 1) | prevIterCrEnd
-                        let lf: UInt64 = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
-                        end = (lf & crAdjusted)
+                        let lf: UInt64 = cmpMaskAgainstInput(input: SIMDinput, m: lineFeed)
+                        end = lf & crAdjusted
                         prevIterCrEnd = cr >> 63
                     } else {
-                        end = cmpMaskAgainstInput(input: simdInput, m: lineFeed)
+                        end = cmpMaskAgainstInput(input: SIMDinput, m: lineFeed)
                     }
 
-                    fields[b] = (end | sep) & ~quoteMask
+                    let notQuoteMask = ~quoteMask
+                    fields[i] = (end | sep) & notQuoteMask
+                    twoByteBoundaryBitMasks[i] = CRLF ? buildTwoByteEndMask(end, sep, notQuoteMask) : 0
                 }
 
-                for b in 0...SIMDCSV_BUFFERSIZE {
-                    let internalIdx: size_t = 64 * b + idx
-                    flattenBits(basePtr: &pcsv.indexes, base: &base, idx: internalIdx, bits: fields[b])
+                for i in 0...CSVbufferSize {
+                    let internalIdx: size_t = 64 * i + idx
+                    flattenBits(pcsv: &pcsv, base: &base, idx: internalIdx, columnBitMask: fields[i], CRLFseenBitMask: twoByteBoundaryBitMasks[i])
                 }
 
                 globalIdx = idx
@@ -357,6 +425,7 @@ struct SimdCSV {
             let quoteMask = findQuoteMask(input: simdInput, prevIterInsideQuote: &prevIterInsideQuote)
             let sep = cmpMaskAgainstInput(input: simdInput, m: comma)
             var end: UInt64 = UInt64.zero
+            
             if CRLF {
                 let cr: UInt64 = cmpMaskAgainstInput(input: simdInput, m: carrageReturn)
                 let crAdjusted: UInt64 = (cr << 1) | prevIterCrEnd
@@ -371,8 +440,11 @@ struct SimdCSV {
             // then outside the quotes with LF so it's OK to "and off"
             // the quoted bits here. Some other quote convention would
             // need to be thought about carefully
-            let fieldSep = (end | sep) & ~quoteMask
-            flattenBits(basePtr: &pcsv.indexes, base: &base, idx:idx, bits: fieldSep)
+            let notQuoteMask = ~quoteMask
+            let fieldSep = (end | sep) & notQuoteMask
+            
+            let twoByteBoundary = CRLF ? buildTwoByteEndMask(end, sep, notQuoteMask) : 0
+            flattenBits(pcsv: &pcsv, base: &base, idx: idx, columnBitMask: fieldSep, CRLFseenBitMask: twoByteBoundary)
         }
 
         pcsv.numberOfIndexes = base
@@ -403,15 +475,17 @@ struct SimdCSV {
     }
 
     public func loadCSVData64BitPadded(csv: Data, CRLF: Bool = false, verbose:Bool = false) -> LoadResult {
-        let p = csv
         var pcsv: ParseCSV = ParseCSV()
-        pcsv.indexes = Array<UInt32>.init(repeating: UInt32.zero, count: p.count)
+        pcsv.indices = Array<UInt32>(repeating: UInt32.zero, count: csv.count)
+        pcsv.indexEnds = Array<UInt32>(repeating: UInt32.zero, count: csv.count)
+        pcsv.data = csv
+        pcsv.CRLF = CRLF
         if verbose {
-            let sizeAsText = formatByteCount(count: p.count)
+            let sizeAsText = formatByteCount(count: csv.count)
             self.log.debug("loaded CSV sized ", sizeAsText)
         }
 
-        p.withUnsafeBytes { rawBufferPointer in
+        csv.withUnsafeBytes { rawBufferPointer in
             let baseAddress: UnsafeRawPointer = rawBufferPointer.baseAddress!
             let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
             let len = rawBufferPointer.count

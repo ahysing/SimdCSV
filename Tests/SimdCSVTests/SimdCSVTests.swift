@@ -226,16 +226,60 @@ final class SimdCSVTests: XCTestCase {
         let text = "From,To,Distance,Color,PADDING1\nVacouver,Seattle,1,Grey,PADDING\n" +
                    "                                                                "
         let data :Data = text.data(using: .utf8)!
-        let simdCSV = SimdCSV.init()
+        let simdCSV = SimdCSV()
 
         let result = simdCSV.loadCSVData64BitPadded(csv: data, verbose: true)
         
         XCTAssertNotNil(result)
         let csv = result.csv
         XCTAssertNotNil(csv)
-        XCTAssertNotNil(csv.indexes)
+        XCTAssertNotNil(csv.indices)
         let count = result.csv.numberOfIndexes
-        XCTAssertEqual(10, count)
+        XCTAssertEqual(11, count)
+    }
+    
+    func test_loadCSVData64BitPadded_InputHasTwoCells() {
+        // This is a hard case
+        //
+        // Notice how Royce da 5'9" contains a quote in the text
+        // Notice how Tyler, The Creator contains a comma
+        //
+        let text = "Hip Hop Musician,Year of birth\r\n" +
+        "                                                     ";
+        
+        let data :Data = text.data(using: .utf8)!
+        let simdCSV = SimdCSV()
+
+        let result = simdCSV.loadCSVData64BitPadded(csv: data, CRLF: true, verbose: true)
+        
+        XCTAssertNotNil(result)
+        let csv = result.csv
+        let cell = csv.getCell(idx:0)
+        XCTAssertEqual("Hip Hop Musician", cell)
+        let cell2 = csv.getCell(idx:1)
+        XCTAssertEqual("Year of birth", cell2)
+    }
+
+    func test_loadCSVData64BitPadded_InputHasCellWithQuotes() {
+        // This is a hard case
+        //
+        // Notice how Royce da 5'9" contains a quote in the text
+        // Notice how Tyler, The Creator contains a comma
+        //
+        let text = "Royce da 5'9\"\",1977\r\n" +
+        "                                            "
+        
+        let data :Data = text.data(using: .utf8)!
+        let simdCSV = SimdCSV()
+
+        let result = simdCSV.loadCSVData64BitPadded(csv: data, CRLF: true, verbose: true)
+        
+        XCTAssertNotNil(result)
+        let csv = result.csv
+        let cell = csv.getCell(idx:0)
+        print(cell)
+        
+        XCTAssertEqual("Royce da 5'9\"\"", cell)
     }
 
     static var allTests = [

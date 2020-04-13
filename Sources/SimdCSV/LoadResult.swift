@@ -7,7 +7,7 @@
 
 public class LoadResult {
     public let status: LoadStatus
-    public let csv: ParseCSV
+    public var csv: ParseCSV
     init(status: LoadStatus = LoadStatus.OK, csv: ParseCSV = ParseCSV()) {
         self.status = status
         self.csv = csv
