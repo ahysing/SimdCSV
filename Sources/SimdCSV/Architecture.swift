@@ -9,7 +9,7 @@ import simd
 
 #if arch(x86_64)
 import _Builtin_intrinsics.intel
-#warning("Imported Intel Intrinsics. Now we are playing with Intel SSE and Intel SSE2")
+#warning("Imported Intel Intrinsics. Now we are playing with Intel SSE and SSE2")
 #endif
 
 #if arch(arm64)

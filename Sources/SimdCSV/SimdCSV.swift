@@ -528,7 +528,7 @@ public struct SimdCSV {
             let dataLength = rawBufferPointer.count
 
             var timingPhase: Timing
-            if #available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *) {
+            if #available(OSX 10.14, iOS 12.0, watchOS 5.0, tvOS 12.0, *) {
                 timingPhase = AppleTiming(category: "Find indexes", log: self.log as! AppToOSLog)
             } else {
                 timingPhase = AllSystemsTiming(category: "Find indexes", log: self.log)

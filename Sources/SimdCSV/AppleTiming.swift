@@ -17,13 +17,12 @@ import os.signpost
 * processes, be specific to one process, or be specific to a single thread.
 */
 
-@available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
+@available(OSX 10.14, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
 public class AppleTiming: Timing {
     private let category: StaticString
     private let log: os.OSLog
     private let signpostID: OSSignpostID
 
-    @available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
     required init(category: StaticString, log: AppToOSLog) {
         self.log = log.log
         self.category = category
