@@ -14,12 +14,12 @@ import _Builtin_intrinsics.intel
 
 #if arch(arm64)
 import _Builtin_intrinsics.arm
-#warning("Imported ARM Intrinsics for ARM64. Now we are playing with ARM neon :)")
+#warning("Imported ARM Intrinsics for ARM64. Now we are playing with ARM neon")
 #endif
 
 #if arch(arm)
 import _Builtin_intrinsics.arm
-#warning("Imported ARM Intrinsics for ARM7 and ARM8. Now we are playing with ARM neon :)")
+#warning("Imported ARM Intrinsics for ARM7 and ARM8. Now we are playing with ARM neon")
 #endif
 
 public struct Architecture {

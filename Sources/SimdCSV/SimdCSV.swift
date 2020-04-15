@@ -15,7 +15,7 @@ public struct SimdCSV {
     fileprivate static let lineFeed: UInt8 = 0x0a
     public var log: AppLogger
     @available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-    public init(osLogger: AppToOSLog) {
+    public init(osLogger: AppleLogger) {
         self.log = osLogger
     }
 
@@ -25,7 +25,7 @@ public struct SimdCSV {
 
     public init() {
         if #available(OSX 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-            self.log = AppToOSLog()
+            self.log = AppleLogger()
         } else {
             self.log = StdOutLog()
         }
@@ -498,7 +498,7 @@ public struct SimdCSV {
             return loadCSVData64BitPadded(csv: csv, CRLF:CRLF, verbose: verbose)
         } catch {
             self.log.error("%s", "\(error)" as CVarArg)
-            return LoadResult(status: LoadStatus.Failed)
+            return LoadResult(status: LoadStatus.failed)
         }
     }
 
@@ -529,13 +529,15 @@ public struct SimdCSV {
 
             var timingPhase: Timing
             if #available(OSX 10.14, iOS 12.0, watchOS 5.0, tvOS 12.0, *) {
-                timingPhase = AppleTiming(category: "Find indexes", log: self.log as! AppToOSLog)
+                timingPhase = AppleTiming(category: "Find indexes", log: self.log as! AppleLogger)
             } else {
                 timingPhase = AllSystemsTiming(category: "Find indexes", log: self.log)
             }
+            
             timingPhase.start()
             SimdCSV.findIndexes(buf: CSVinMemory, len: dataLength, pcsv: &pcsv, CRLF: CRLF)
             timingPhase.stop()
+            timingPhase.log()
         }
 
         if verbose {
@@ -564,6 +566,6 @@ public struct SimdCSV {
             self.log.info("done")
         }
 
-        return LoadResult(status: LoadStatus.OK, csv: pcsv)
+        return LoadResult(status: LoadStatus.ok, csv: pcsv)
     }
 }

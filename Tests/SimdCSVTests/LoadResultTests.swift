@@ -10,7 +10,7 @@ import XCTest
 
 final class LoadResultTests: XCTestCase {
     func testLoadResultInit() {
-        XCTAssertEqual(LoadResult(status: LoadStatus.OK).status, LoadStatus.OK)
+        XCTAssertEqual(LoadResult(status: LoadStatus.ok).status, LoadStatus.ok)
     }
 
     static var allTests = [

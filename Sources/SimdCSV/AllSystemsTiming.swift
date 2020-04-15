@@ -17,9 +17,10 @@ public class AllSystemsTiming: Timing {
     public var startedAt: clock_t
     public var stoppedAt: clock_t
     private let category: StaticString
-    private let log: AppLogger
+    private let appLogger: AppLogger
+    
     public init(category: StaticString, log: AppLogger = StdOutLog()) {
-        self.log = log
+        self.appLogger = log
         self.category = category
         self.startedAt = 0 as clock_t
         self.stoppedAt = 0 as clock_t
@@ -31,7 +32,10 @@ public class AllSystemsTiming: Timing {
 
     public func stop() {
         self.stoppedAt = clock()
+    }
+    
+    public func log() {
         let duration = self.stoppedAt - self.stoppedAt
-        self.log.info(self.category," Spent ", duration, " ms")
+        self.appLogger.info(self.category," Spent ", duration, " ms")
     }
 }

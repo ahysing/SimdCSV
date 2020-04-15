@@ -14,4 +14,5 @@
 public protocol Timing {
     func start()
     func stop()
+    func log()
 }

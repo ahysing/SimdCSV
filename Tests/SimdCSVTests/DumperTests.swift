@@ -19,7 +19,7 @@ final class DumperTests: XCTestCase {
 
         let pcsv = ParseCSV(data: data, indexEnds: indexEnds, indices: indexes)
         let dumper = Dumper.init()
-        let result = LoadResult(status: LoadStatus.OK, csv: pcsv)
+        let result = LoadResult(status: LoadStatus.ok, csv: pcsv)
 
         // This line resolves in a crash
         dumper.dump(loadResult: result)
@@ -27,7 +27,7 @@ final class DumperTests: XCTestCase {
         XCTAssert(true)
     }
 
-    func testDump_InputIsCSVWithDoubleQuotes() {
+    func test_dumpWithIndices_InputIsCSVWithDoubleQuotes() {
         let simdCSV = SimdCSV()
         let text = "Hip Hop Musician,Year of birth\r\n" +
                    "\"Tyler, The Creator\",1991\r\n" +
@@ -39,7 +39,7 @@ final class DumperTests: XCTestCase {
 
         let result = simdCSV.loadCSVData64BitPadded(csv: data, CRLF: true)
         let dumper = Dumper.init()
-        dumper.dump(loadResult: result)
+        dumper.dumpWithIndices(loadResult: result)
     }
 
 }
