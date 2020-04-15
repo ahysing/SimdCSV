@@ -527,11 +527,11 @@ public struct SimdCSV {
             let CSVinMemory = UnsafeMutableRawPointer(mutating: baseAddress)
             let dataLength = rawBufferPointer.count
 
-            var timingPhase: TimingPhase
+            var timingPhase: Timing
             if #available(OSX 10.12, iOS 12.0, watchOS 5.0, tvOS 12.0, *) {
-                timingPhase = OSTimingPhase(category: "Find indexes", log: self.log as! AppToOSLog)
+                timingPhase = AppleTiming(category: "Find indexes", log: self.log as! AppToOSLog)
             } else {
-                timingPhase = PosixTimingPhase(category: "Find indexes", log: self.log)
+                timingPhase = AllSystemsTiming(category: "Find indexes", log: self.log)
             }
             timingPhase.start()
             SimdCSV.findIndexes(buf: CSVinMemory, len: dataLength, pcsv: &pcsv, CRLF: CRLF)

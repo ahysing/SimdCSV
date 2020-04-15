@@ -6,11 +6,12 @@
 //
 
 import simd
+
 #if arch(x86_64)
 import _Builtin_intrinsics.intel
-#warning("Imported Intel Intrinsics. Now we are playing with Intel SSE :)")
+#warning("Imported Intel Intrinsics. Now we are playing with Intel SSE and Intel SSE2")
 #endif
-//  https://en.wikipedia.org/wiki/Apple-designed_processors#Apple_S5
+
 #if arch(arm64)
 import _Builtin_intrinsics.arm
 #warning("Imported ARM Intrinsics for ARM64. Now we are playing with ARM neon :)")
